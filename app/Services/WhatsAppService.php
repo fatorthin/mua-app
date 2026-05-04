@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 
 class WhatsAppService
 {
