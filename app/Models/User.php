@@ -20,6 +20,8 @@ class User extends Authenticatable
         'phone',
         'studio_name',
         'address',
+        'invoice_logo_path',
+        'invoice_footer_notes',
     ];
 
     protected $hidden = [

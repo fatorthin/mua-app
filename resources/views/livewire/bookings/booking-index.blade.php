@@ -29,9 +29,10 @@
         </div>
     </div>
 
-    {{-- Table --}}
+    {{-- Table / Card View --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
+        {{-- Desktop Table View --}}
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
@@ -68,6 +69,8 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('bookings.show', $booking) }}" wire:navigate
+                                        class="text-xs text-pink-600 hover:underline">Detail</a>
                                     @if ($booking->status === 'pending')
                                         <button wire:click="confirmBooking({{ $booking->id }})"
                                             class="text-xs text-blue-600 hover:underline">Konfirmasi</button>
@@ -91,6 +94,64 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile Card View --}}
+        <div class="md:hidden divide-y divide-gray-100">
+            @forelse($bookings as $booking)
+                <div class="p-4 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-medium text-gray-800">{{ $booking->client->name }}</p>
+                            <p class="text-xs text-gray-400">{{ $booking->client->phone }}</p>
+                        </div>
+                        <span
+                            class="px-2.5 py-1 rounded-full text-xs font-medium shrink-0
+                            {{ $booking->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                            {{ $booking->status === 'confirmed' ? 'bg-blue-100 text-blue-700' : '' }}
+                            {{ $booking->status === 'completed' ? 'bg-green-100 text-green-700' : '' }}
+                            {{ $booking->status === 'cancelled' ? 'bg-red-100 text-red-700' : '' }}">
+                            {{ $booking->status_label }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                            <p class="text-xs text-gray-400">Layanan</p>
+                            <p class="text-gray-700 truncate">{{ $booking->service->name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Harga</p>
+                            <p class="text-gray-700 font-medium">{{ $booking->formatted_price }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400">Waktu</p>
+                            <p class="text-gray-700">{{ $booking->booking_date->format('d M Y, H:i') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-gray-50">
+                        <a href="{{ route('bookings.show', $booking) }}" wire:navigate
+                            class="text-sm font-medium text-pink-600 hover:text-pink-700">Detail</a>
+                        @if ($booking->status === 'pending')
+                            <button wire:click="confirmBooking({{ $booking->id }})"
+                                class="text-sm font-medium text-blue-600 hover:text-blue-700">Konfirmasi</button>
+                        @endif
+                        @if ($booking->status === 'confirmed')
+                            <button wire:click="completeBooking({{ $booking->id }})"
+                                class="text-sm font-medium text-green-600 hover:text-green-700">Selesai</button>
+                        @endif
+                        <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
+                            class="text-sm font-medium text-gray-600 hover:text-gray-700">Edit</a>
+                        <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?"
+                            class="text-sm font-medium text-red-500 hover:text-red-600">Hapus</button>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-gray-400">
+                    Tidak ada booking ditemukan.
+                </div>
+            @endforelse
         </div>
 
         @if ($bookings->hasPages())
