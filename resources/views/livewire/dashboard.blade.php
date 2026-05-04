@@ -18,7 +18,7 @@
             <p class="text-2xl font-bold text-teal-600">{{ $stats['total_services'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p class="text-xs text-gray-500 mb-1">Pendapatan Bulan Ini</p>
+            <p class="text-xs text-gray-500 mb-1">Pendapatan Bulan Iniaaaa</p>
             <p class="text-xl font-bold text-green-600">Rp {{ number_format($stats['revenue_month'], 0, ',', '.') }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
