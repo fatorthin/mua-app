@@ -14,7 +14,7 @@
             <p class="text-2xl font-bold text-blue-600">{{ $stats['total_clients'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p class="text-xs text-gray-500 mb-1">Layanan Aktif</p>
+            <p class="text-xs text-gray-500 mb-1">Layanan Aktifaaaa</p>
             <p class="text-2xl font-bold text-teal-600">{{ $stats['total_services'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
