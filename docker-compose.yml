@@ -1,0 +1,11 @@
+services:
+  app:
+    image: serversideup/php:8.4-fpm-nginx
+    container_name: mua_app
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - PHP_OPCACHE_ENABLE=1

@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\InvoiceController;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
+Route::post('/webhooks/github/deploy', DeployWebhookController::class)
+    ->name('webhooks.github.deploy');
+
 Route::get('/invoices/{invoice}/public-pdf', [InvoiceController::class, 'publicPdf'])
     ->middleware('signed')
     ->name('invoices.public-pdf');
