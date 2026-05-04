@@ -6,7 +6,7 @@
             <p class="text-2xl font-bold text-pink-600">{{ $stats['today_bookings'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p class="text-xs text-gray-500 mb-1">Total Booking</p>
+            <p class="text-xs text-gray-500 mb-1">Total Bookingzzzz</p>
             <p class="text-2xl font-bold text-indigo-600">{{ $stats['total_bookings'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
