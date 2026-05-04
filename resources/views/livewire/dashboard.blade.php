@@ -2,7 +2,7 @@
     {{-- Stats Grid --}}
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p class="text-xs text-gray-500 mb-1">Booking Hari Ini Guys</p>
+            <p class="text-xs text-gray-500 mb-1">Booking Hari Ini Guys hohoho</p>
             <p class="text-2xl font-bold text-pink-600">{{ $stats['today_bookings'] }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
