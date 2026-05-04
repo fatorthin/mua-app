@@ -45,6 +45,7 @@ return [
         'branch' => env('DEPLOY_BRANCH', 'main'),
         'github_secret' => env('GITHUB_WEBHOOK_SECRET', ''),
         'internal_token' => env('DEPLOY_HOOK_INTERNAL_TOKEN', ''),
+        'forward_url' => env('DEPLOY_FORWARD_URL', 'http://10.0.0.1:9001/hooks/deploy-mua'),
     ],
 
 ];

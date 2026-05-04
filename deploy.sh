@@ -10,6 +10,7 @@ BRANCH="${DEPLOY_BRANCH:-main}"
 WEBHOOK_SECRET="${WEBHOOK_SECRET:-}"
 LOG_FILE="${DEPLOY_LOG_FILE:-$APP_DIR/storage/logs/deploy.log}"
 DEPLOY_USE_DOCKER="${DEPLOY_USE_DOCKER:-auto}"
+FALLBACK_LOG_FILE="${DEPLOY_FALLBACK_LOG_FILE:-$APP_DIR/deploy.log}"
 
 timestamp() {
   date '+%Y-%m-%d %H:%M:%S'
@@ -36,8 +37,27 @@ run_in_app_container() {
   docker compose exec -T app sh -lc "$cmd"
 }
 
-mkdir -p "$(dirname "$LOG_FILE")"
-touch "$LOG_FILE"
+prepare_log_file() {
+  local preferred_dir
+
+  preferred_dir="$(dirname "$LOG_FILE")"
+  mkdir -p "$preferred_dir" 2>/dev/null || true
+
+  if [[ -e "$LOG_FILE" && -w "$LOG_FILE" ]]; then
+    return
+  fi
+
+  if [[ ! -e "$LOG_FILE" && -w "$preferred_dir" ]]; then
+    touch "$LOG_FILE"
+    return
+  fi
+
+  LOG_FILE="$FALLBACK_LOG_FILE"
+  mkdir -p "$(dirname "$LOG_FILE")"
+  touch "$LOG_FILE"
+}
+
+prepare_log_file
 
 PAYLOAD_FILE="$(mktemp)"
 cleanup() {

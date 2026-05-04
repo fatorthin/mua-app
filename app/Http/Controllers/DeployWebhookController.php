@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,42 +31,41 @@ class DeployWebhookController extends Controller
             return response('Event ignored', 202);
         }
 
-        $scriptPath = base_path('deploy.sh');
-        if (!is_file($scriptPath) || !is_executable($scriptPath)) {
-            return response('deploy.sh is missing or not executable', 500);
-        }
-
-        $payloadFile = tempnam(storage_path('app'), 'deploy_payload_');
-        if ($payloadFile === false) {
-            return response('Failed to prepare payload file', 500);
-        }
-
-        file_put_contents($payloadFile, $request->getContent());
-
         $payloadRef = (string) $request->input('ref', '');
         if ($payloadRef === '') {
             return response('Invalid payload: missing ref', 422);
         }
 
-        $appDir = escapeshellarg(base_path());
-        $branch = escapeshellarg((string) config('services.deploy_webhook.branch', 'main'));
-        $secret = escapeshellarg($githubSecret);
-        $signature = escapeshellarg($githubSignature);
+        $forwardUrl = (string) config('services.deploy_webhook.forward_url', '');
+        if ($forwardUrl === '') {
+            return response('Deploy forward URL is not configured', 500);
+        }
 
-        $script = escapeshellarg($scriptPath);
-        $payload = escapeshellarg($payloadFile);
-        $logFile = escapeshellarg(storage_path('logs/deploy-hook.log'));
+        $forwardResponse = Http::timeout(10)
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'X-GitHub-Event' => $event !== '' ? $event : 'push',
+                'X-Deploy-Token' => $internalToken,
+            ])
+            ->withBody($request->getContent(), 'application/json')
+            ->post($forwardUrl);
 
-        $command = "APP_DIR=$appDir DEPLOY_BRANCH=$branch WEBHOOK_SECRET=$secret "
-            . "HTTP_X_HUB_SIGNATURE_256=$signature X_HUB_SIGNATURE_256=$signature "
-            . "$script < $payload >> $logFile 2>&1; rm -f $payload";
+        if (!$forwardResponse->successful()) {
+            Log::error('Deploy webhook forward failed', [
+                'status' => $forwardResponse->status(),
+                'body' => $forwardResponse->body(),
+                'forward_url' => $forwardUrl,
+                'ref' => $payloadRef,
+            ]);
 
-        exec('nohup sh -c ' . escapeshellarg($command) . ' > /dev/null 2>&1 &');
+            return response('Deploy forward failed', 502);
+        }
 
         Log::info('Deploy webhook accepted', [
             'event' => $event,
-            'ref' => $request->input('ref'),
+            'ref' => $payloadRef,
             'repository' => $request->input('repository.full_name'),
+            'forward_url' => $forwardUrl,
         ]);
 
         return response('Deploy started', 202);
