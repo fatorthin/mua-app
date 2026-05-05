@@ -1,7 +1,5 @@
-const CACHE_NAME = 'mua-manager-v1';
+const CACHE_NAME = 'mua-manager-v2';
 const STATIC_ASSETS = [
-    '/',
-    '/dashboard',
     '/manifest.json',
 ];
 
@@ -33,6 +31,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Only handle same-origin and known safe cross-origin requests
+    const url = new URL(event.request.url);
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {
@@ -45,7 +49,9 @@ self.addEventListener('fetch', (event) => {
                 return response;
             })
             .catch(() => {
-                return caches.match(event.request);
+                return caches.match(event.request).then((cached) => {
+                    return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+                });
             })
     );
 });

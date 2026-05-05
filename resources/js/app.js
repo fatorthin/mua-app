@@ -5,7 +5,10 @@ if ("serviceWorker" in navigator) {
     });
 }
 
-let deferredInstallPrompt = null;
+// Gunakan event yang sudah ditangkap oleh inline script di <head>
+// (window.__pwaInstallEvent), karena beforeinstallprompt dapat terpicu
+// sebelum module JS ini dieksekusi.
+let deferredInstallPrompt = window.__pwaInstallEvent || null;
 
 const isPortableDevice = () => {
     const ua = navigator.userAgent || "";
@@ -21,12 +24,11 @@ const isStandalone = () =>
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true;
 
-// Harus didaftarkan sedini mungkin — SEBELUM load — karena
-// beforeinstallprompt bisa terpicu lebih awal dari event load.
+// Tetap pasang listener untuk kasus event belum terpicu saat module dieksekusi
 window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    // Tampilkan tombol jika DOM sudah siap, atau tandai untuk ditampilkan saat DOM siap
+    window.__pwaInstallEvent = event;
     const btn = document.getElementById("pwa-install-btn");
     if (btn) {
         btn.classList.remove("hidden");
@@ -58,6 +60,7 @@ const bindPwaInstallButton = () => {
             deferredInstallPrompt.prompt();
             await deferredInstallPrompt.userChoice;
             deferredInstallPrompt = null;
+            window.__pwaInstallEvent = null;
             refreshVisibility();
             return;
         }
@@ -74,7 +77,7 @@ const bindPwaInstallButton = () => {
         );
     });
 
-    // Tampilkan tombol jika beforeinstallprompt sudah terpicu sebelum DOM siap
+    // Tampilkan tombol jika event sudah ditangkap sebelum bindPwaInstallButton dipanggil
     refreshVisibility();
 };
 

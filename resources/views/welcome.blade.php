@@ -11,6 +11,16 @@
     <meta name="theme-color" content="#ec4899">
     <link rel="icon" type="image/png" href="/lip-matt.png">
     <link rel="apple-touch-icon" href="/lip-matt.png">
+    <script>
+        // Tangkap beforeinstallprompt sedini mungkin — sebelum module JS dimuat
+        window.__pwaInstallEvent = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            window.__pwaInstallEvent = e;
+            var btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
