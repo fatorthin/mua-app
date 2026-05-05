@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Invoices;
 
+use App\Jobs\SendBookingInvoiceJob;
 use App\Models\Invoice;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -27,6 +28,17 @@ class InvoiceIndex extends Component
         session()->flash('success', $status === 'paid'
             ? 'Status invoice berhasil diubah menjadi Sudah Dibayar.'
             : 'Status invoice berhasil diubah menjadi Belum Dibayar.');
+    }
+
+    public function resendInvoice(int $id): void
+    {
+        $invoice = Invoice::with(['booking.client'])
+            ->whereHas('booking', fn($q) => $q->where('user_id', auth()->id()))
+            ->findOrFail($id);
+
+        SendBookingInvoiceJob::dispatch($invoice->booking, $invoice);
+
+        session()->flash('success', 'Invoice berhasil dijadwalkan ulang untuk dikirim ke WhatsApp klien.');
     }
 
     public function render()

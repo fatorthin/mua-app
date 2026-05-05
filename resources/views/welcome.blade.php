@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,6 +11,7 @@
     <meta name="theme-color" content="#ec4899">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="antialiased font-sans bg-white text-gray-800">
     <nav class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <div class="flex items-center gap-2 text-xl font-bold text-pink-600">
@@ -17,10 +19,10 @@
         </div>
         <div class="flex items-center gap-3">
             @auth
-            <a href="{{ route('dashboard') }}" class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Dashboard</a>
             @else
-            <a href="{{ route('login') }}" class="text-gray-600 text-sm hover:text-gray-900">Masuk</a>
-            <a href="{{ route('register') }}" class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Daftar Gratis</a>
+                <a href="{{ route('login') }}" class="text-gray-600 text-sm hover:text-gray-900">Masuk</a>
+                <a href="{{ route('register') }}" class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Daftar Gratis</a>
             @endauth
         </div>
     </nav>
@@ -41,6 +43,9 @@
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 <a href="{{ route('register') }}" class="bg-pink-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-pink-700 text-center">Mulai Gratis Sekarang</a>
                 <a href="{{ route('login') }}" class="border border-gray-200 text-gray-700 px-8 py-3.5 rounded-xl font-semibold hover:bg-gray-50 text-center">Masuk ke Akun</a>
+                <button id="pwa-install-btn" type="button" class="hidden border border-pink-200 text-pink-700 px-8 py-3.5 rounded-xl font-semibold hover:bg-pink-50 text-center">
+                    Install App di Perangkat Ini
+                </button>
             </div>
             <p class="text-xs text-gray-400 mt-4">Demo: rina@muamanager.id / password</p>
         </section>
@@ -93,4 +98,5 @@
         © {{ date('Y') }} MUA Manager. Dibuat dengan 💄 untuk MUA Indonesia.
     </footer>
 </body>
+
 </html>

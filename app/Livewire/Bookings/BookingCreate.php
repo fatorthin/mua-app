@@ -7,7 +7,6 @@ use App\Models\BookingItem;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Service;
-use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -188,7 +187,7 @@ class BookingCreate extends Component
             'booking_date' => $bookingDatetime,
             'duration'     => $totalDuration,
             'price'        => $totalPrice,
-            'status'       => 'pending',
+            'status'       => 'confirmed',
             'location'     => $this->location,
             'notes'        => $this->notes,
             'is_dp_paid'   => $this->is_dp_paid,

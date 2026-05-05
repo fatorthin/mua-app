@@ -11,7 +11,7 @@
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ec4899">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/favicon.ico">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -30,15 +30,12 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top bar -->
-            <header
-                class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+            <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
                 <div class="flex items-center gap-3">
                     {{-- Mobile sidebar toggle --}}
-                    <button @click="$dispatch('toggle-sidebar')"
-                        class="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+                    <button @click="$dispatch('toggle-sidebar')" class="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                     @if (isset($header))
@@ -47,8 +44,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-gray-600 hidden sm:block">{{ auth()->user()->name }}</span>
-                    <div
-                        class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-semibold text-sm">
+                    <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-semibold text-sm">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
                 </div>
