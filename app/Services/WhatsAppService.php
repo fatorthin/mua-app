@@ -9,6 +9,100 @@ use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
+    public function sendReminder(Booking $booking): bool
+    {
+        $url = rtrim((string) config('services.whatsapp_gateway.url'), '/');
+        $auth = (string) config('services.whatsapp_gateway.auth');
+        $deviceId = (string) config('services.whatsapp_gateway.device_id');
+
+        if ($url === '' || $auth === '') {
+            return false;
+        }
+
+        [$username, $password] = $this->parseBasicAuth($auth);
+        if ($username === '' || $password === '') {
+            Log::warning('WhatsApp gateway auth format invalid. Expected user:password.');
+            return false;
+        }
+
+        $phone = $this->toWhatsappJid($booking->client?->phone);
+        if ($phone === null) {
+            Log::warning('Skip WhatsApp reminder because client phone is empty.', [
+                'booking_id' => $booking->id,
+            ]);
+            return false;
+        }
+
+        $message = $this->buildReminderMessage($booking);
+
+        $headers = [];
+        if ($deviceId !== '') {
+            $headers['X-Device-Id'] = $deviceId;
+        }
+
+        $response = Http::withBasicAuth($username, $password)
+            ->withHeaders($headers)
+            ->acceptJson()
+            ->post($url . '/send/message', [
+                'phone'   => $phone,
+                'message' => $message,
+            ]);
+
+        if ($response->failed()) {
+            Log::warning('Failed sending WhatsApp reminder.', [
+                'booking_id' => $booking->id,
+                'status'     => $response->status(),
+                'response'   => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function buildReminderMessage(Booking $booking): string
+    {
+        $clientName = $booking->client?->name ?? 'Pelanggan';
+
+        $bookingDateStr = '-';
+        if ($booking->booking_date) {
+            $bd = $booking->booking_date;
+            $bookingDateStr = $bd->format('d') . ' ' . $this->getIndonesianMonth((int) $bd->format('n')) . ' ' . $bd->format('Y') . ' pukul ' . $bd->format('H:i');
+        }
+
+        $location = $booking->location ?: '-';
+        $serviceName = $booking->service?->name ?? '-';
+
+        $remaining = $booking->is_dp_paid
+            ? number_format(max(0, (float) $booking->price - (float) $booking->dp_amount), 0, ',', '.')
+            : number_format((float) $booking->price, 0, ',', '.');
+
+        $lines = [
+            'Halo ' . $clientName . ', 👋',
+            '',
+            '⏰ *Pengingat Booking MUA*',
+            '',
+            'Booking Anda dijadwalkan *besok*:',
+            '📅 Tanggal  : ' . $bookingDateStr,
+            '💄 Layanan  : ' . $serviceName,
+            '📍 Lokasi   : ' . $location,
+        ];
+
+        if ($booking->is_dp_paid && (float) $booking->dp_amount > 0) {
+            $lines[] = '💰 Sisa Bayar: Rp ' . $remaining;
+        } else {
+            $lines[] = '💰 Total     : Rp ' . $remaining;
+        }
+
+        $lines[] = '';
+        $lines[] = 'Mohon pastikan Anda sudah siap ya. Jika ada pertanyaan, jangan ragu untuk menghubungi kami.';
+        $lines[] = '';
+        $lines[] = 'Terima kasih! 🌸';
+
+        return implode("\n", $lines);
+    }
+
     public function sendInvoiceCreated(Booking $booking, Invoice $invoice): bool
     {
         $url = rtrim((string) config('services.whatsapp_gateway.url'), '/');

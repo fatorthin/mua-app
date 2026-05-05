@@ -135,8 +135,7 @@
             <h4 class="text-sm font-semibold text-gray-800 mb-3">Informasi Invoice</h4>
             @if ($booking->invoice)
                 <div class="text-sm text-gray-600 space-y-1">
-                    <p>No. Invoice: <span
-                            class="font-medium text-gray-800">{{ $booking->invoice->invoice_number }}</span></p>
+                    <p>No. Invoice: <span class="font-medium text-gray-800">{{ $booking->invoice->invoice_number }}</span></p>
                     <p>Status: <span class="font-medium text-gray-800">{{ $booking->invoice->status_label }}</span></p>
                     <p>Total Tagihan: <span class="font-medium text-gray-800">Rp
                             {{ number_format($booking->invoice->total, 0, ',', '.') }}</span></p>
@@ -146,11 +145,25 @@
             @endif
 
             <div class="mt-5 flex flex-wrap gap-2">
-                <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
-                    class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Edit
+                <a href="{{ route('bookings.edit', $booking) }}" wire:navigate class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Edit
                     Booking</a>
-                <a href="{{ route('bookings.index') }}" wire:navigate
-                    class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Kembali ke
+
+                @php
+                    $gcStart = $booking->booking_date->format('Ymd\THis');
+                    $gcEnd = $booking->booking_date->clone()->addMinutes($booking->duration)->format('Ymd\THis');
+                    $gcTitle = urlencode('MUA Booking – ' . ($booking->client->name ?? 'Klien'));
+                    $gcDetails = urlencode('Layanan: ' . ($booking->service?->name ?? '-') . "\n" . 'Durasi: ' . $booking->duration . ' menit' . "\n" . 'Catatan: ' . ($booking->notes ?: '-'));
+                    $gcLocation = urlencode($booking->location ?: '');
+                    $gcUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' . "&text={$gcTitle}" . "&dates={$gcStart}/{$gcEnd}" . "&details={$gcDetails}" . "&location={$gcLocation}";
+                @endphp
+                <a href="{{ $gcUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM5 7V6h14v1H5zm2 4h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 15h2v2H7zm4 0h2v2h-2z" />
+                    </svg>
+                    Tambah ke Google Calendar
+                </a>
+
+                <a href="{{ route('bookings.index') }}" wire:navigate class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Kembali ke
                     Daftar</a>
             </div>
         </div>
