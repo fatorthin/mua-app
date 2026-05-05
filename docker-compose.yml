@@ -20,3 +20,14 @@ services:
       - .:/var/www/html
     depends_on:
       - app
+
+  scheduler:
+    image: serversideup/php:8.4-cli
+    container_name: mua_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: ["/bin/sh", "-c", "while true; do php artisan schedule:run --no-interaction >> /dev/null 2>&1; sleep 60; done"]
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - app
