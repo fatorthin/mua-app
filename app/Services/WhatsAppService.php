@@ -39,10 +39,12 @@ class WhatsAppService
         $logoPath = $this->getLogoBase64($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $pdfBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4')
             ->output();
+
+        $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
 
         $headers = [];
         if ($deviceId !== '') {
@@ -51,7 +53,7 @@ class WhatsAppService
 
         $response = Http::withBasicAuth($username, $password)
             ->withHeaders($headers)
-            ->attach('file', $pdfBinary, 'Invoice-' . $invoice->invoice_number . '.pdf')
+            ->attach('file', $fileBinary, $fileName)
             ->acceptJson()
             ->post($url . '/send/file', [
                 'phone' => $phone,
@@ -93,20 +95,50 @@ class WhatsAppService
         }
     }
 
+    private function getIndonesianMonth(int $month): string
+    {
+        $months = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+        return $months[$month] ?? '';
+    }
+
     private function buildInvoiceCaption(Booking $booking, Invoice $invoice): string
     {
         $clientName = $booking->client?->name ?? 'Pelanggan';
-        $bookingDate = $booking->booking_date?->format('d M Y H:i') ?? '-';
+
+        $bookingDateStr = '-';
+        if ($booking->booking_date) {
+            $bd = $booking->booking_date;
+            $bookingDateStr = $bd->format('d') . ' ' . $this->getIndonesianMonth((int)$bd->format('n')) . ' ' . $bd->format('Y H:i');
+        }
+
         $subtotal = number_format((float) $invoice->subtotal, 0, ',', '.');
         $remaining = number_format((float) $invoice->total, 0, ',', '.');
-        $dueDate = $invoice->due_date?->format('d M Y') ?? '-';
+
+        $dueDateStr = '-';
+        if ($booking->booking_date) {
+            $dd = $booking->booking_date->copy()->subDay();
+            $dueDateStr = $dd->format('d') . ' ' . $this->getIndonesianMonth((int)$dd->format('n')) . ' ' . $dd->format('Y');
+        }
 
         $lines = [
             'Halo ' . $clientName . ',',
             '',
             'Booking Anda berhasil dibuat.',
             'No. Invoice: ' . $invoice->invoice_number,
-            'Tanggal Booking: ' . $bookingDate,
+            'Tanggal Booking: ' . $bookingDateStr,
             'Total Layanan: Rp ' . $subtotal,
         ];
 
@@ -115,7 +147,7 @@ class WhatsAppService
         }
 
         $lines[] = 'Sisa Tagihan: Rp ' . $remaining;
-        $lines[] = 'Jatuh Tempo: ' . $dueDate;
+        $lines[] = 'Jatuh Tempo: ' . $dueDateStr;
         $lines[] = '';
         $lines[] = 'Terima kasih.';
 

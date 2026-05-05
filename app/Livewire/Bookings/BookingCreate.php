@@ -220,11 +220,7 @@ class BookingCreate extends Component
         ]);
 
         // Do not block booking flow when WhatsApp gateway is unavailable.
-        try {
-            app(WhatsAppService::class)->sendInvoiceCreated($booking->load('client'), $invoice);
-        } catch (\Throwable $e) {
-            report($e);
-        }
+        \App\Jobs\SendBookingInvoiceJob::dispatch($booking->load('client'), $invoice);
 
         session()->flash('success', 'Booking berhasil ditambahkan.');
         $this->redirect(route('bookings.index'), navigate: true);

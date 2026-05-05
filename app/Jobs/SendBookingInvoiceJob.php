@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Booking;
+use App\Models\Invoice;
+use App\Services\WhatsAppService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class SendBookingInvoiceJob implements ShouldQueue
+{
+    use InteractsWithQueue, Queueable, SerializesModels;
+
+    public $booking;
+    public $invoice;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(Booking $booking, Invoice $invoice)
+    {
+        $this->booking = $booking;
+        $this->invoice = $invoice;
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(WhatsAppService $whatsAppService): void
+    {
+        $whatsAppService->sendInvoiceCreated($this->booking, $this->invoice);
+    }
+}
