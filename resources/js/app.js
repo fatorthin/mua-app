@@ -15,6 +15,12 @@ const isPortableDevice = () => {
     );
 };
 
+const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+
+const isStandalone = () =>
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+
 const bindPwaInstallButton = () => {
     const btn = document.getElementById("pwa-install-btn");
     if (!btn) {
@@ -22,7 +28,12 @@ const bindPwaInstallButton = () => {
     }
 
     const refreshVisibility = () => {
-        if (deferredInstallPrompt && isPortableDevice()) {
+        if (isStandalone() || !isPortableDevice()) {
+            btn.classList.add("hidden");
+            return;
+        }
+
+        if (deferredInstallPrompt || isIOS()) {
             btn.classList.remove("hidden");
             return;
         }
@@ -31,14 +42,24 @@ const bindPwaInstallButton = () => {
     };
 
     btn.addEventListener("click", async () => {
-        if (!deferredInstallPrompt) {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            refreshVisibility();
             return;
         }
 
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        refreshVisibility();
+        if (isIOS()) {
+            alert(
+                "Untuk iPhone/iPad: tekan tombol Share di Safari, lalu pilih 'Add to Home Screen'.",
+            );
+            return;
+        }
+
+        alert(
+            "Install belum tersedia saat ini. Buka menu browser lalu pilih 'Install app' atau 'Add to Home screen'.",
+        );
     });
 
     window.addEventListener("beforeinstallprompt", (event) => {

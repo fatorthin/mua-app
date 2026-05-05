@@ -8,8 +8,7 @@
     {{-- Filters --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5">
         <div class="flex flex-col sm:flex-row gap-3">
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama klien..."
-                class="flex-1 rounded-lg border-gray-300 text-sm focus:ring-pink-500 focus:border-pink-500">
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama klien..." class="flex-1 rounded-lg border-gray-300 text-sm focus:ring-pink-500 focus:border-pink-500">
 
             <select wire:model.live="statusFilter" class="rounded-lg border-gray-300 text-sm focus:ring-pink-500">
                 <option value="">Semua Status</option>
@@ -19,11 +18,13 @@
                 <option value="cancelled">Dibatalkan</option>
             </select>
 
-            <input wire:model.live="dateFilter" type="date"
-                class="rounded-lg border-gray-300 text-sm focus:ring-pink-500">
+            <input wire:model.live="dateFilter" type="date" class="rounded-lg border-gray-300 text-sm focus:ring-pink-500">
 
-            <a href="{{ route('bookings.create') }}" wire:navigate
-                class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 whitespace-nowrap text-center">
+            <a href="{{ route('bookings.calendar') }}" wire:navigate class="border border-pink-200 text-pink-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-50 whitespace-nowrap text-center">
+                Mode Kalender
+            </a>
+
+            <a href="{{ route('bookings.create') }}" wire:navigate class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 whitespace-nowrap text-center">
                 + Tambah Booking
             </a>
         </div>
@@ -69,20 +70,15 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('bookings.show', $booking) }}" wire:navigate
-                                        class="text-xs text-pink-600 hover:underline">Detail</a>
+                                    <a href="{{ route('bookings.show', $booking) }}" wire:navigate class="text-xs text-pink-600 hover:underline">Detail</a>
                                     @if ($booking->status === 'pending')
-                                        <button wire:click="confirmBooking({{ $booking->id }})"
-                                            class="text-xs text-blue-600 hover:underline">Konfirmasi</button>
+                                        <button wire:click="confirmBooking({{ $booking->id }})" class="text-xs text-blue-600 hover:underline">Konfirmasi</button>
                                     @endif
                                     @if ($booking->status === 'confirmed')
-                                        <button wire:click="completeBooking({{ $booking->id }})"
-                                            class="text-xs text-green-600 hover:underline">Selesai</button>
+                                        <button wire:click="completeBooking({{ $booking->id }})" class="text-xs text-green-600 hover:underline">Selesai</button>
                                     @endif
-                                    <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
-                                        class="text-xs text-gray-600 hover:underline">Edit</a>
-                                    <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?"
-                                        class="text-xs text-red-500 hover:underline">Hapus</button>
+                                    <a href="{{ route('bookings.edit', $booking) }}" wire:navigate class="text-xs text-gray-600 hover:underline">Edit</a>
+                                    <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?" class="text-xs text-red-500 hover:underline">Hapus</button>
                                 </div>
                             </td>
                         </tr>
@@ -131,20 +127,15 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-gray-50">
-                        <a href="{{ route('bookings.show', $booking) }}" wire:navigate
-                            class="text-sm font-medium text-pink-600 hover:text-pink-700">Detail</a>
+                        <a href="{{ route('bookings.show', $booking) }}" wire:navigate class="text-sm font-medium text-pink-600 hover:text-pink-700">Detail</a>
                         @if ($booking->status === 'pending')
-                            <button wire:click="confirmBooking({{ $booking->id }})"
-                                class="text-sm font-medium text-blue-600 hover:text-blue-700">Konfirmasi</button>
+                            <button wire:click="confirmBooking({{ $booking->id }})" class="text-sm font-medium text-blue-600 hover:text-blue-700">Konfirmasi</button>
                         @endif
                         @if ($booking->status === 'confirmed')
-                            <button wire:click="completeBooking({{ $booking->id }})"
-                                class="text-sm font-medium text-green-600 hover:text-green-700">Selesai</button>
+                            <button wire:click="completeBooking({{ $booking->id }})" class="text-sm font-medium text-green-600 hover:text-green-700">Selesai</button>
                         @endif
-                        <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
-                            class="text-sm font-medium text-gray-600 hover:text-gray-700">Edit</a>
-                        <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?"
-                            class="text-sm font-medium text-red-500 hover:text-red-600">Hapus</button>
+                        <a href="{{ route('bookings.edit', $booking) }}" wire:navigate class="text-sm font-medium text-gray-600 hover:text-gray-700">Edit</a>
+                        <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?" class="text-sm font-medium text-red-500 hover:text-red-600">Hapus</button>
                     </div>
                 </div>
             @empty

@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Bookings
     Route::get('/bookings', fn() => view('bookings.index'))->name('bookings.index');
+    Route::get('/bookings/calendar', fn() => view('bookings.calendar'))->name('bookings.calendar');
     Route::get('/bookings/create', fn() => view('bookings.create'))->name('bookings.create');
     Route::get('/bookings/{booking}', function (Booking $booking) {
         abort_unless($booking->user_id === auth()->id(), 403);
