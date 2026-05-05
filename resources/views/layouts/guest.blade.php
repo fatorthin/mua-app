@@ -20,7 +20,7 @@
 
 <body class="font-sans antialiased bg-[linear-gradient(180deg,#fff7fb_0%,#ffffff_45%,#fff1f6_100%)] text-gray-900">
     <div class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-        <div class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-[2rem] border border-pink-100 bg-white shadow-[0_30px_80px_rgba(236,72,153,0.12)]">
+        <div class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_rgba(236,72,153,0.12)]">
             <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(244,114,182,0.22),_transparent_35%),linear-gradient(180deg,#fff7fb_0%,#ffe4ef_100%)] p-10">
                 <div>
                     <a href="/" wire:navigate class="inline-flex items-center gap-3 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-pink-600 shadow-sm ring-1 ring-pink-100 backdrop-blur">
