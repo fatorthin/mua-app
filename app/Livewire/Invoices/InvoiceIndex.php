@@ -12,11 +12,21 @@ class InvoiceIndex extends Component
 
     public string $statusFilter = '';
 
-    public function markPaid(int $id): void
+    public function updateStatus(int $id, string $status): void
     {
+        abort_unless(in_array($status, ['unpaid', 'paid'], true), 400);
+
         $invoice = Invoice::whereHas('booking', fn($q) => $q->where('user_id', auth()->id()))
             ->findOrFail($id);
-        $invoice->update(['status' => 'paid', 'paid_at' => now()->toDateString()]);
+
+        $invoice->update([
+            'status' => $status,
+            'paid_at' => $status === 'paid' ? now()->toDateString() : null,
+        ]);
+
+        session()->flash('success', $status === 'paid'
+            ? 'Status invoice berhasil diubah menjadi Sudah Dibayar.'
+            : 'Status invoice berhasil diubah menjadi Belum Dibayar.');
     }
 
     public function render()

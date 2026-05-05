@@ -1,0 +1,7 @@
+[
+    {
+        "id": "deploy-mua",
+        "execute-command": "/DATA/AppData/mua-app/deploy.sh",
+        "command-working-directory": "/DATA/AppData/mua-app"
+    }
+]

@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('studio_name')->nullable();
             $table->text('address')->nullable();
+            $table->string('invoice_logo_path')->nullable();
+            $table->text('invoice_footer_notes')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -19,11 +19,15 @@ class Booking extends Model
         'location',
         'notes',
         'price',
+        'is_dp_paid',
+        'dp_amount',
     ];
 
     protected $casts = [
         'booking_date' => 'datetime',
         'price' => 'decimal:2',
+        'is_dp_paid' => 'boolean',
+        'dp_amount' => 'decimal:2',
     ];
 
     public function user()
@@ -39,6 +43,11 @@ class Booking extends Model
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(BookingItem::class);
     }
 
     public function invoice()

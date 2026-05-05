@@ -15,7 +15,6 @@ class ClientIndex extends Component
     public ?int $editingId = null;
     public string $name = '';
     public string $phone = '';
-    public string $email = '';
     public string $notes = '';
 
     public function updatingSearch(): void
@@ -28,14 +27,13 @@ class ClientIndex extends Component
         return [
             'name'  => 'required|string|max:100',
             'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
             'notes' => 'nullable|string|max:500',
         ];
     }
 
     public function openCreate(): void
     {
-        $this->reset(['editingId', 'name', 'phone', 'email', 'notes']);
+        $this->reset(['editingId', 'name', 'phone', 'notes']);
         $this->showModal = true;
     }
 
@@ -44,10 +42,43 @@ class ClientIndex extends Component
         $client = Client::where('user_id', auth()->id())->findOrFail($id);
         $this->editingId = $id;
         $this->name      = $client->name;
-        $this->phone     = $client->phone ?? '';
-        $this->email     = $client->email ?? '';
+        $this->phone     = $this->stripPhoneCountryPrefix($client->phone ?? '');
         $this->notes     = $client->notes ?? '';
         $this->showModal = true;
+    }
+
+    private function normalizePhoneWith62(?string $phone): ?string
+    {
+        $digits = preg_replace('/\D+/', '', $phone ?? '');
+        if ($digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($digits, '62')) {
+            $digits = substr($digits, 2);
+        } elseif (str_starts_with($digits, '0')) {
+            $digits = ltrim($digits, '0');
+        }
+
+        return $digits === '' ? null : '62' . $digits;
+    }
+
+    private function stripPhoneCountryPrefix(?string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone ?? '');
+        if ($digits === '') {
+            return '';
+        }
+
+        if (str_starts_with($digits, '62')) {
+            return substr($digits, 2);
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return ltrim($digits, '0');
+        }
+
+        return $digits;
     }
 
     public function save(): void
@@ -57,8 +88,7 @@ class ClientIndex extends Component
         $data = [
             'user_id' => auth()->id(),
             'name'    => $this->name,
-            'phone'   => $this->phone,
-            'email'   => $this->email,
+            'phone'   => $this->normalizePhoneWith62($this->phone),
             'notes'   => $this->notes,
         ];
 
