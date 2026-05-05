@@ -11,7 +11,8 @@
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ec4899">
-    <link rel="apple-touch-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/lip-matt.png">
+    <link rel="apple-touch-icon" href="/lip-matt.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

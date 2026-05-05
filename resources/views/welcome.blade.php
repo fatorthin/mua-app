@@ -9,6 +9,8 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ec4899">
+    <link rel="icon" type="image/png" href="/lip-matt.png">
+    <link rel="apple-touch-icon" href="/lip-matt.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
