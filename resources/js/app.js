@@ -21,6 +21,18 @@ const isStandalone = () =>
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true;
 
+// Harus didaftarkan sedini mungkin — SEBELUM load — karena
+// beforeinstallprompt bisa terpicu lebih awal dari event load.
+window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    // Tampilkan tombol jika DOM sudah siap, atau tandai untuk ditampilkan saat DOM siap
+    const btn = document.getElementById("pwa-install-btn");
+    if (btn) {
+        btn.classList.remove("hidden");
+    }
+});
+
 const bindPwaInstallButton = () => {
     const btn = document.getElementById("pwa-install-btn");
     if (!btn) {
@@ -62,12 +74,7 @@ const bindPwaInstallButton = () => {
         );
     });
 
-    window.addEventListener("beforeinstallprompt", (event) => {
-        event.preventDefault();
-        deferredInstallPrompt = event;
-        refreshVisibility();
-    });
-
+    // Tampilkan tombol jika beforeinstallprompt sudah terpicu sebelum DOM siap
     refreshVisibility();
 };
 
