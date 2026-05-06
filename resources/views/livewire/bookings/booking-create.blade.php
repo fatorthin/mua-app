@@ -259,8 +259,8 @@
                                 <input type="text" inputmode="numeric" x-bind:value="formatted"
                                     x-on:input="
                                         const raw = $event.target.value.replace(/[^0-9]/g, '');
-                                        formatted = raw ? parseInt(raw).toLocaleString('id-ID') : '';
-                                        $wire.set('dp_amount', raw !== '' ? parseInt(raw) : '');
+                                        formatted = raw ? parseInt(raw, 10).toLocaleString('id-ID') : '';
+                                        $wire.set('dp_amount', raw !== '' ? parseInt(raw, 10) : '', false);
                                     "
                                     placeholder="0"
                                     class="w-full min-w-0 px-3 py-2 text-sm border-0 focus:ring-0 focus:outline-none font-medium text-gray-700">
