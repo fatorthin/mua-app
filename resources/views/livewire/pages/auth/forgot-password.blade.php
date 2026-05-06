@@ -28,7 +28,7 @@ new #[Layout('layouts.guest')] class extends Component {
             $resetUrl = route('password.reset', ['token' => $token, 'phone' => $targetPhone]);
 
             $sent = $this->sendViaWhatsapp($targetPhone, $resetUrl);
-            if (! $sent['ok']) {
+            if (!$sent['ok']) {
                 Log::warning('Failed sending password reset via WhatsApp.', [
                     'user_id' => $user->id,
                     'phone' => $targetPhone,
