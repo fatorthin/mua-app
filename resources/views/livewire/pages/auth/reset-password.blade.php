@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -10,10 +11,10 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
-{
+new #[Layout('layouts.guest')] class extends Component {
     #[Locked]
     public string $token = '';
+    public string $phone = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
@@ -25,7 +26,14 @@ new #[Layout('layouts.guest')] class extends Component
     {
         $this->token = $token;
 
-        $this->email = request()->string('email');
+        $phone = $this->normalizePhoneWith62((string) request()->string('phone'));
+        $this->phone = $phone;
+
+        if ($phone !== '') {
+            $this->email = User::whereIn('phone', $this->phoneCandidates($phone))->value('email') ?? '';
+        } else {
+            $this->email = (string) request()->string('email');
+        }
     }
 
     /**
@@ -35,30 +43,45 @@ new #[Layout('layouts.guest')] class extends Component
     {
         $this->validate([
             'token' => ['required'],
-            'email' => ['required', 'string', 'email'],
+            'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $normalizedPhone = $this->normalizePhoneWith62($this->phone);
+        $this->email = User::whereIn('phone', $this->phoneCandidates($normalizedPhone))->value('email') ?? '';
+
+        if ($this->email === '') {
+            $this->addError('phone', 'Nomor WhatsApp tidak ditemukan.');
+            return;
+        }
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $this->only('email', 'password', 'password_confirmation', 'token'),
+            [
+                'email' => $this->email,
+                'password' => $this->password,
+                'password_confirmation' => $this->password_confirmation,
+                'token' => $this->token,
+            ],
             function ($user) {
-                $user->forceFill([
-                    'password' => Hash::make($this->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+                $user
+                    ->forceFill([
+                        'password' => Hash::make($this->password),
+                        'remember_token' => Str::random(60),
+                    ])
+                    ->save();
 
                 event(new PasswordReset($user));
-            }
+            },
         );
 
         // If the password was successfully reset, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status != Password::PASSWORD_RESET) {
-            $this->addError('email', __($status));
+            $this->addError('phone', __($status));
 
             return;
         }
@@ -67,21 +90,60 @@ new #[Layout('layouts.guest')] class extends Component
 
         $this->redirectRoute('login', navigate: true);
     }
+
+    private function normalizePhoneWith62(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return '';
+        }
+
+        if (str_starts_with($digits, '62')) {
+            return $digits;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return '62' . ltrim($digits, '0');
+        }
+
+        return '62' . $digits;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function phoneCandidates(string $normalizedPhone): array
+    {
+        $digits = preg_replace('/\D+/', '', $normalizedPhone) ?? '';
+
+        if ($digits === '') {
+            return [''];
+        }
+
+        if (str_starts_with($digits, '62')) {
+            return array_values(array_unique([$digits, '0' . substr($digits, 2)]));
+        }
+
+        return array_values(array_unique([$digits, '62' . ltrim($digits, '0')]));
+    }
 }; ?>
 
 <div>
     <form wire:submit="resetPassword">
-        <!-- Email Address -->
+        <!-- WhatsApp Number -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="phone" :value="__('No. WhatsApp')" />
+            <x-text-input wire:model="phone" id="phone" class="block mt-1 w-full" type="text" inputmode="numeric"
+                name="phone" required autofocus autocomplete="tel" />
+            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password"
+                required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
@@ -90,8 +152,7 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
 
             <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" />
+                type="password" name="password_confirmation" required autocomplete="new-password" />
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
