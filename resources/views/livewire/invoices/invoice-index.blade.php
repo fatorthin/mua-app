@@ -43,20 +43,28 @@
                             <td class="px-4 py-3 text-gray-500 text-xs">{{ $invoice->paid_at?->format('d M Y') ?? '-' }}
                             </td>
                             <td class="px-4 py-3">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-medium
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-xs font-medium
                             {{ $invoice->status === 'unpaid' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700' }}">
                                     {{ $invoice->status_label }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex justify-end items-center gap-3">
-                                    <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank" class="text-xs font-medium text-pink-600 hover:text-pink-700">Preview (PDF)
+                                    <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank"
+                                        class="text-xs font-medium text-pink-600 hover:text-pink-700">Preview (PDF)
                                     </a>
-                                    <button wire:click="resendInvoice({{ $invoice->id }})" wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?" class="text-xs text-blue-600 hover:underline">Kirim Ulang WA</button>
+                                    <button wire:click="resendInvoice({{ $invoice->id }})"
+                                        wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?"
+                                        class="text-xs text-blue-600 hover:underline">Kirim Ulang WA</button>
                                     @if ($invoice->status === 'unpaid')
-                                        <button wire:click="updateStatus({{ $invoice->id }}, 'paid')" wire:confirm="Tandai invoice ini sebagai lunas?" class="text-xs text-green-600 hover:underline">Tandai Lunas</button>
+                                        <button wire:click="updateStatus({{ $invoice->id }}, 'paid')"
+                                            wire:confirm="Tandai invoice ini sebagai lunas?"
+                                            class="text-xs text-green-600 hover:underline">Tandai Lunas</button>
                                     @else
-                                        <button wire:click="updateStatus({{ $invoice->id }}, 'unpaid')" wire:confirm="Ubah status invoice ini kembali menjadi belum dibayar?" class="text-xs text-orange-600 hover:underline">Set Belum Lunas</button>
+                                        <button wire:click="updateStatus({{ $invoice->id }}, 'unpaid')"
+                                            wire:confirm="Ubah status invoice ini menjadi belum dibayar?"
+                                            class="text-xs text-orange-600 hover:underline">Set Belum Lunas</button>
                                     @endif
                                 </div>
                             </td>
@@ -79,7 +87,8 @@
                             <p class="font-medium text-gray-800">{{ $invoice->booking->client->name }}</p>
                             <p class="font-mono text-xs text-gray-500">{{ $invoice->invoice_number }}</p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium shrink-0
+                        <span
+                            class="px-2.5 py-1 rounded-full text-xs font-medium shrink-0
                             {{ $invoice->status === 'unpaid' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700' }}">
                             {{ $invoice->status_label }}
                         </span>
@@ -101,12 +110,19 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-gray-50">
-                        <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank" class="text-sm font-medium text-pink-600 hover:text-pink-700">Preview (PDF)</a>
-                        <button wire:click="resendInvoice({{ $invoice->id }})" wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?" class="text-sm font-medium text-blue-600 hover:text-blue-700">Kirim Ulang WA</button>
+                        <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank"
+                            class="text-sm font-medium text-pink-600 hover:text-pink-700">Preview (PDF)</a>
+                        <button wire:click="resendInvoice({{ $invoice->id }})"
+                            wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?"
+                            class="text-sm font-medium text-blue-600 hover:text-blue-700">Kirim Ulang WA</button>
                         @if ($invoice->status === 'unpaid')
-                            <button wire:click="updateStatus({{ $invoice->id }}, 'paid')" class="text-sm font-medium text-green-600 hover:text-green-700">Lunas</button>
+                            <button wire:click="updateStatus({{ $invoice->id }}, 'paid')"
+                                wire:confirm="Tandai invoice ini sebagai lunas?"
+                                class="text-sm font-medium text-green-600 hover:text-green-700">Lunas</button>
                         @else
-                            <button wire:click="updateStatus({{ $invoice->id }}, 'unpaid')" class="text-sm font-medium text-orange-600 hover:text-orange-700">Batalkan</button>
+                            <button wire:click="updateStatus({{ $invoice->id }}, 'unpaid')"
+                                wire:confirm="Ubah status invoice ini menjadi belum dibayar?"
+                                class="text-sm font-medium text-orange-600 hover:text-orange-700">Batalkan</button>
                         @endif
                     </div>
                 </div>

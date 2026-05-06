@@ -84,10 +84,12 @@
                                         class="text-xs text-pink-600 hover:underline">Detail</a>
                                     @if ($booking->status === 'pending')
                                         <button wire:click="confirmBooking({{ $booking->id }})"
+                                            wire:confirm="Konfirmasi booking ini?"
                                             class="text-xs text-blue-600 hover:underline">Konfirmasi</button>
                                     @endif
                                     @if ($booking->status === 'confirmed')
                                         <button wire:click="completeBooking({{ $booking->id }})"
+                                            wire:confirm="Tandai booking ini sebagai selesai?"
                                             class="text-xs text-green-600 hover:underline">Selesai</button>
                                     @endif
                                     <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
@@ -146,10 +148,12 @@
                             class="text-sm font-medium text-pink-600 hover:text-pink-700">Detail</a>
                         @if ($booking->status === 'pending')
                             <button wire:click="confirmBooking({{ $booking->id }})"
+                                wire:confirm="Konfirmasi booking ini?"
                                 class="text-sm font-medium text-blue-600 hover:text-blue-700">Konfirmasi</button>
                         @endif
                         @if ($booking->status === 'confirmed')
                             <button wire:click="completeBooking({{ $booking->id }})"
+                                wire:confirm="Tandai booking ini sebagai selesai?"
                                 class="text-sm font-medium text-green-600 hover:text-green-700">Selesai</button>
                         @endif
                         <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
