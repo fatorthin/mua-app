@@ -78,6 +78,14 @@ class InvoiceRenderer
         if ($phone !== '') {
             imagestring($image, 3, 60, 158, 'WA : ' . $phone, $muted);
         }
+        $instagram = ltrim((string) ($invoice->booking->user->instagram ?? ''), '@');
+        if ($instagram !== '') {
+            imagestring($image, 3, 60, 180, 'IG : @' . $instagram, $muted);
+        }
+        $tiktok = ltrim((string) ($invoice->booking->user->tiktok ?? ''), '@');
+        if ($tiktok !== '') {
+            imagestring($image, 3, 60, 202, 'TikTok : @' . $tiktok, $muted);
+        }
 
         // Header invoice (kanan)
         imagestring($image, 5, 800, 60, 'INVOICE', $bold);

@@ -418,6 +418,7 @@ class WhatsAppService
     private function buildInvoiceCaption(Booking $booking, Invoice $invoice): string
     {
         $clientName = $booking->client?->name ?? 'Pelanggan';
+        $owner = $booking->user;
 
         $bookingDateStr = '-';
         if ($booking->booking_date) {
@@ -449,6 +450,21 @@ class WhatsAppService
 
         $lines[] = 'Sisa Tagihan: Rp ' . $remaining;
         $lines[] = 'Jatuh Tempo: ' . $dueDateStr;
+
+        $contacts = [];
+        if (! empty($owner?->phone)) {
+            $contacts[] = 'WA: ' . $owner->phone;
+        }
+        if (! empty($owner?->instagram)) {
+            $contacts[] = 'IG: @' . ltrim((string) $owner->instagram, '@');
+        }
+        if (! empty($owner?->tiktok)) {
+            $contacts[] = 'TikTok: @' . ltrim((string) $owner->tiktok, '@');
+        }
+        if (! empty($contacts)) {
+            $lines[] = 'Kontak MUA: ' . implode(' | ', $contacts);
+        }
+
         $lines[] = '';
         $lines[] = 'Terima kasih.';
 
