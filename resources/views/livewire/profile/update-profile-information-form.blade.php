@@ -286,15 +286,6 @@ new class extends Component {
             <x-input-error class="mt-2" :messages="$errors->get('tiktok')" />
         </div>
 
-        <div>
-            <x-input-label for="whatsapp_device_id" :value="__('WhatsApp Device ID')" />
-            <x-text-input wire:model="whatsapp_device_id" id="whatsapp_device_id" name="whatsapp_device_id"
-                type="text" class="mt-1 block w-full" placeholder="Device ID dari WhatsApp API Anda" />
-            <p class="mt-1 text-xs text-gray-400">Jika diisi, pengiriman reminder dan invoice akan memakai device
-                WhatsApp milik user ini melalui gateway yang sudah dikonfigurasi aplikasi.</p>
-            <x-input-error class="mt-2" :messages="$errors->get('whatsapp_device_id')" />
-        </div>
-
         <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>

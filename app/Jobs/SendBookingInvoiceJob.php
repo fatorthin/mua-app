@@ -14,8 +14,8 @@ class SendBookingInvoiceJob implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-    public $booking;
-    public $invoice;
+    public Booking $booking;
+    public Invoice $invoice;
 
     /**
      * Create a new job instance.

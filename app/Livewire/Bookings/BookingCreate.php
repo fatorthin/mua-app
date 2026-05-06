@@ -67,12 +67,12 @@ class BookingCreate extends Component
         'selectedServices.*.price.min'            => 'Harga tidak boleh negatif.',
     ];
 
-    public function updatedSelectedServices($value, $key): void
+    public function updatedSelectedServices(mixed $value, string $key): void
     {
         // When service_id changes, auto-fill the price from service
         if (str_ends_with($key, '.service_id') && $value) {
             $index   = explode('.', $key)[0];
-            $service = Service::where('user_id', auth()->id())->find($value);
+            $service = Service::where('user_id', Auth::id())->find($value);
             if ($service) {
                 $this->selectedServices[$index]['price'] = $service->price;
             }
@@ -92,7 +92,7 @@ class BookingCreate extends Component
         }
     }
 
-    public function updatedIsDpPaid($value): void
+    public function updatedIsDpPaid(bool $value): void
     {
         if (! $value) {
             $this->dp_amount = '';
@@ -227,8 +227,8 @@ class BookingCreate extends Component
 
     public function render()
     {
-        $clients  = Client::where('user_id', auth()->id())->orderBy('name')->get();
-        $services = Service::where('user_id', auth()->id())->where('is_active', true)->orderBy('name')->get();
+        $clients  = Client::where('user_id', Auth::id())->orderBy('name')->get();
+        $services = Service::where('user_id', Auth::id())->where('is_active', true)->orderBy('name')->get();
 
         return view('livewire.bookings.booking-create', compact('clients', 'services'));
     }

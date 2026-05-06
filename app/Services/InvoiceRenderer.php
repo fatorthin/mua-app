@@ -214,7 +214,7 @@ class InvoiceRenderer
         return $binary ?: null;
     }
 
-    private function drawLogo($canvas, ?string $logoPath, int $x, int $y, int $maxW, int $maxH): void
+    private function drawLogo(\GdImage $canvas, ?string $logoPath, int $x, int $y, int $maxW, int $maxH): void
     {
         if (! $logoPath || ! is_file($logoPath)) {
             return;
