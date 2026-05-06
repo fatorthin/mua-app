@@ -66,8 +66,18 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) *</label>
-                            <input wire:model="price" type="number" min="0" placeholder="500000"
-                                class="w-full rounded-lg border-gray-300 text-sm focus:ring-pink-500">
+                            <div x-data="{
+                                display: @js($price) ? new Intl.NumberFormat('id-ID').format(Number(@js($price))) : '',
+                                format(val) {
+                                    let raw = val.replace(/\D/g, '');
+                                    $wire.set('price', raw !== '' ? Number(raw) : '');
+                                    this.display = raw ? new Intl.NumberFormat('id-ID').format(Number(raw)) : '';
+                                }
+                            }">
+                                <input type="text" x-model="display" @input="format($event.target.value)"
+                                    placeholder="500.000"
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:ring-pink-500">
+                            </div>
                             @error('price')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
