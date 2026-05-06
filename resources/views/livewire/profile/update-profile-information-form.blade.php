@@ -266,8 +266,12 @@ new class extends Component {
 
         <div>
             <x-input-label for="phone" :value="__('No. WhatsApp')" />
-            <x-text-input wire:model="phone" id="phone" name="phone" type="text" class="mt-1 block w-full"
-                autocomplete="tel" placeholder="Contoh: 081234567890" />
+            <div class="mt-1 flex">
+                <span
+                    class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">62</span>
+                <x-text-input wire:model="phone" id="phone" name="phone" type="text"
+                    class="block w-full rounded-l-none" autocomplete="tel" placeholder="8123456789" />
+            </div>
             <p class="mt-1 text-xs text-gray-400">Nomor ini dipakai sebagai kontak WA yang tampil di invoice.</p>
             <x-input-error class="mt-2" :messages="$errors->get('phone')" />
         </div>
@@ -344,9 +348,13 @@ new class extends Component {
             <div class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                 <div>
                     <x-input-label for="whatsapp_pair_phone" :value="__('Nomor WhatsApp akun yang akan dipairing')" />
-                    <x-text-input wire:model="whatsapp_pair_phone" id="whatsapp_pair_phone" name="whatsapp_pair_phone"
-                        type="text" class="mt-1 block w-full" placeholder="Contoh: 081234567890" />
-
+                    <div class="mt-1 flex">
+                        <span
+                            class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">62</span>
+                        <x-text-input wire:model="whatsapp_pair_phone" id="whatsapp_pair_phone"
+                            name="whatsapp_pair_phone" type="text" class="block w-full rounded-l-none"
+                            placeholder="8123456789" />
+                    </div>
                     <x-input-error class="mt-2" :messages="$errors->get('whatsapp_pair_phone')" />
                 </div>
                 <div>
@@ -368,8 +376,13 @@ new class extends Component {
             <div class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                 <div>
                     <x-input-label for="whatsapp_test_phone" :value="__('No. Tujuan Test Send')" />
-                    <x-text-input wire:model="whatsapp_test_phone" id="whatsapp_test_phone" name="whatsapp_test_phone"
-                        type="text" class="mt-1 block w-full" placeholder="Nomor yang akan menerima pesan test" />
+                    <div class="mt-1 flex">
+                        <span
+                            class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">62</span>
+                        <x-text-input wire:model="whatsapp_test_phone" id="whatsapp_test_phone"
+                            name="whatsapp_test_phone" type="text" class="block w-full rounded-l-none"
+                            placeholder="8123456789" />
+                    </div>
                     <x-input-error class="mt-2" :messages="$errors->get('whatsapp_test_phone')" />
                 </div>
                 <div>
