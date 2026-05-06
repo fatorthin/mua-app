@@ -4,16 +4,212 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Invoice;
+use App\Models\User;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
+    public function createDevice(User $user, ?string $preferredDeviceId = null): array
+    {
+        ['url' => $url, 'auth' => $auth] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        $payload = [];
+        $preferredDeviceId = trim((string) $preferredDeviceId);
+        if ($preferredDeviceId !== '') {
+            $payload['device_id'] = $preferredDeviceId;
+        }
+
+        $response = $this->authorizedRequest($auth)
+            ->asJson()
+            ->acceptJson()
+            ->send('POST', $url . '/devices', [
+                'body' => json_encode((object) $payload, JSON_UNESCAPED_SLASHES),
+            ]);
+
+        if ($response->failed()) {
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal membuat device WhatsApp.',
+            ];
+        }
+
+        $deviceId = (string) ($response->json('results.id')
+            ?? $response->json('results.device_id')
+            ?? $preferredDeviceId);
+
+        $user->forceFill([
+            'whatsapp_device_id' => $deviceId !== '' ? $deviceId : null,
+        ])->save();
+
+        return [
+            'ok' => true,
+            'message' => 'Device WhatsApp berhasil dibuat.',
+            'device_id' => $deviceId,
+        ];
+    }
+
+    public function refreshDeviceStatus(User $user): array
+    {
+        ['url' => $url, 'auth' => $auth] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        $deviceId = trim((string) $user->whatsapp_device_id);
+        if ($deviceId === '') {
+            $user->forceFill([
+                'whatsapp_device_status' => null,
+                'whatsapp_device_jid' => null,
+                'whatsapp_device_last_synced_at' => now(),
+            ])->save();
+
+            return ['ok' => false, 'message' => 'Device ID belum diisi.'];
+        }
+
+        $response = $this->authorizedRequest($auth)
+            ->acceptJson()
+            ->get($url . '/devices');
+
+        if ($response->failed()) {
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal mengambil status device WhatsApp.',
+            ];
+        }
+
+        $devices = $response->json('results', []);
+        $device = collect(is_array($devices) ? $devices : [])->first(function ($item) use ($deviceId) {
+            return ($item['id'] ?? $item['device'] ?? null) === $deviceId;
+        });
+
+        $status = $device['state'] ?? 'not_found';
+        $jid = $device['jid'] ?? null;
+
+        $user->forceFill([
+            'whatsapp_device_status' => $status,
+            'whatsapp_device_jid' => $jid,
+            'whatsapp_device_last_synced_at' => now(),
+        ])->save();
+
+        return [
+            'ok' => $device !== null,
+            'message' => $device !== null ? 'Status device berhasil diperbarui.' : 'Device tidak ditemukan di gateway.',
+            'device' => $device,
+        ];
+    }
+
+    public function requestLoginQr(User $user): array
+    {
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        if ($deviceId === '') {
+            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+        }
+
+        $response = $this->authorizedRequest($auth)
+            ->withHeaders($this->deviceHeaders($deviceId))
+            ->acceptJson()
+            ->get($url . '/app/login');
+
+        if ($response->failed()) {
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal mengambil QR login.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'QR login berhasil dibuat.',
+            'qr_link' => $response->json('results.qr_link'),
+            'qr_duration' => $response->json('results.qr_duration'),
+        ];
+    }
+
+    public function requestPairingCode(User $user, string $phone): array
+    {
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        if ($deviceId === '') {
+            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+        }
+
+        $response = $this->authorizedRequest($auth)
+            ->withHeaders($this->deviceHeaders($deviceId))
+            ->acceptJson()
+            ->get($url . '/app/login-with-code', [
+                'phone' => $phone,
+            ]);
+
+        if ($response->failed()) {
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal mengambil pair code.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'Pair code berhasil dibuat.',
+            'pair_code' => $response->json('results.pair_code'),
+        ];
+    }
+
+    public function sendTestMessage(User $user, string $phone, ?string $message = null): array
+    {
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        if ($deviceId === '') {
+            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+        }
+
+        $jid = $this->toWhatsappJid($phone);
+        if ($jid === null) {
+            return ['ok' => false, 'message' => 'Nomor tujuan test tidak valid.'];
+        }
+
+        $response = $this->authorizedRequest($auth)
+            ->withHeaders($this->deviceHeaders($deviceId))
+            ->acceptJson()
+            ->post($url . '/send/message', [
+                'phone' => $jid,
+                'message' => $message ?: 'Test koneksi WhatsApp dari MUA Manager berhasil.',
+            ]);
+
+        if ($response->failed()) {
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal mengirim pesan test.',
+            ];
+        }
+
+        return ['ok' => true, 'message' => 'Pesan test berhasil dikirim.'];
+    }
+
     public function sendReminder(Booking $booking): bool
     {
-        $url = rtrim((string) config('services.whatsapp_gateway.url'), '/');
-        $auth = (string) config('services.whatsapp_gateway.auth');
-        $deviceId = (string) config('services.whatsapp_gateway.device_id');
+        $booking->loadMissing(['user', 'client', 'service']);
+
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($booking->user);
 
         if ($url === '' || $auth === '') {
             return false;
@@ -35,13 +231,8 @@ class WhatsAppService
 
         $message = $this->buildReminderMessage($booking);
 
-        $headers = [];
-        if ($deviceId !== '') {
-            $headers['X-Device-Id'] = $deviceId;
-        }
-
         $response = Http::withBasicAuth($username, $password)
-            ->withHeaders($headers)
+            ->withHeaders($this->deviceHeaders($deviceId))
             ->acceptJson()
             ->post($url . '/send/message', [
                 'phone'   => $phone,
@@ -105,9 +296,9 @@ class WhatsAppService
 
     public function sendInvoiceCreated(Booking $booking, Invoice $invoice): bool
     {
-        $url = rtrim((string) config('services.whatsapp_gateway.url'), '/');
-        $auth = (string) config('services.whatsapp_gateway.auth');
-        $deviceId = (string) config('services.whatsapp_gateway.device_id');
+        $booking->loadMissing(['user', 'client', 'service']);
+
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($booking->user);
 
         if ($url === '' || $auth === '') {
             return false;
@@ -140,13 +331,8 @@ class WhatsAppService
 
         $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
 
-        $headers = [];
-        if ($deviceId !== '') {
-            $headers['X-Device-Id'] = $deviceId;
-        }
-
         $response = Http::withBasicAuth($username, $password)
-            ->withHeaders($headers)
+            ->withHeaders($this->deviceHeaders($deviceId))
             ->attach('file', $fileBinary, $fileName)
             ->acceptJson()
             ->post($url . '/send/file', [
@@ -166,6 +352,27 @@ class WhatsAppService
         }
 
         return true;
+    }
+
+    private function gatewayConfigFor(?User $user): array
+    {
+        return [
+            'url' => rtrim((string) config('services.whatsapp_gateway.url'), '/'),
+            'auth' => (string) config('services.whatsapp_gateway.auth'),
+            'device_id' => trim((string) ($user?->whatsapp_device_id ?: config('services.whatsapp_gateway.device_id'))),
+        ];
+    }
+
+    private function deviceHeaders(string $deviceId): array
+    {
+        return $deviceId !== '' ? ['X-Device-Id' => $deviceId] : [];
+    }
+
+    private function authorizedRequest(string $auth): PendingRequest
+    {
+        [$username, $password] = $this->parseBasicAuth($auth);
+
+        return Http::withBasicAuth($username, $password);
     }
 
     private function getLogoBase64(Invoice $invoice): ?string

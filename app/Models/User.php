@@ -20,6 +20,12 @@ class User extends Authenticatable
         'address',
         'invoice_logo_path',
         'invoice_footer_notes',
+        'instagram',
+        'tiktok',
+        'whatsapp_device_id',
+        'whatsapp_device_status',
+        'whatsapp_device_jid',
+        'whatsapp_device_last_synced_at',
     ];
 
     protected $hidden = [
@@ -32,6 +38,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'whatsapp_device_last_synced_at' => 'datetime',
         ];
     }
 

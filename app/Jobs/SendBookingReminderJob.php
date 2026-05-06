@@ -20,7 +20,7 @@ class SendBookingReminderJob implements ShouldQueue
 
     public function handle(WhatsAppService $whatsApp): void
     {
-        $this->booking->loadMissing(['client', 'service']);
+        $this->booking->loadMissing(['user', 'client', 'service']);
 
         $whatsApp->sendReminder($this->booking);
     }

@@ -210,6 +210,9 @@
                             @if (!empty($invoice->booking->user->instagram))
                                 <span>IG : {{ $invoice->booking->user->instagram }}</span> &nbsp;&bull;&nbsp;
                             @endif
+                            @if (!empty($invoice->booking->user->tiktok))
+                                <span>TikTok : {{ $invoice->booking->user->tiktok }}</span> &nbsp;&bull;&nbsp;
+                            @endif
                             @if (!empty($invoice->booking->user->phone))
                                 <span>WA : {{ $invoice->booking->user->phone }}</span>
                             @endif
@@ -246,17 +249,23 @@
                     @foreach ($invoice->booking->items as $item)
                         <tr>
                             <td>{{ $item->service->name ?? 'Layanan' }}</td>
-                            <td style="text-align: center;">{{ rtrim(rtrim(number_format((float) ($item->quantity ?? 1), 2, ',', '.'), '0'), ',') }}</td>
-                            <td style="text-align: right;">Rp {{ number_format((float) ($item->price ?? 0), 0, ',', '.') }}</td>
-                            <td style="text-align: right;">Rp {{ number_format((float) ($item->quantity * $item->price), 0, ',', '.') }}</td>
+                            <td style="text-align: center;">
+                                {{ rtrim(rtrim(number_format((float) ($item->quantity ?? 1), 2, ',', '.'), '0'), ',') }}
+                            </td>
+                            <td style="text-align: right;">Rp
+                                {{ number_format((float) ($item->price ?? 0), 0, ',', '.') }}</td>
+                            <td style="text-align: right;">Rp
+                                {{ number_format((float) ($item->quantity * $item->price), 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
                         <td>{{ $invoice->booking->service->name ?? 'Layanan' }}</td>
                         <td style="text-align: center;">1</td>
-                        <td style="text-align: right;">Rp {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}</td>
-                        <td style="text-align: right;">Rp {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}</td>
+                        <td style="text-align: right;">Rp {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}
+                        </td>
+                        <td style="text-align: right;">Rp {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}
+                        </td>
                     </tr>
                 @endif
             </tbody>
@@ -265,18 +274,21 @@
         <table class="summary-table">
             <tr>
                 <td class="summary-label">Subtotal</td>
-                <td class="value" style="font-weight: normal;">Rp {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}</td>
+                <td class="value" style="font-weight: normal;">Rp
+                    {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}</td>
             </tr>
             @if ($invoice->tax > 0)
                 <tr>
                     <td class="summary-label">Pajak / Fee</td>
-                    <td class="value" style="font-weight: normal;">Rp {{ number_format((float) $invoice->tax, 0, ',', '.') }}</td>
+                    <td class="value" style="font-weight: normal;">Rp
+                        {{ number_format((float) $invoice->tax, 0, ',', '.') }}</td>
                 </tr>
             @endif
             @if ($invoice->booking->is_dp_paid && floatval($invoice->booking->dp_amount) > 0)
                 <tr class="divider">
                     <td class="summary-label">Total DP</td>
-                    <td class="value" style="font-weight: normal;">Rp {{ number_format((float) $invoice->booking->dp_amount, 0, ',', '.') }}</td>
+                    <td class="value" style="font-weight: normal;">Rp
+                        {{ number_format((float) $invoice->booking->dp_amount, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="summary-total">
                     <td>Total Booking</td>
@@ -284,7 +296,8 @@
                 </tr>
                 <tr class="summary-total" style="padding-top: 4px;">
                     <td>Kekurangan</td>
-                    <td class="value">Rp {{ number_format((float) ($invoice->total - $invoice->booking->dp_amount), 0, ',', '.') }}</td>
+                    <td class="value">Rp
+                        {{ number_format((float) ($invoice->total - $invoice->booking->dp_amount), 0, ',', '.') }}</td>
                 </tr>
             @else
                 <tr class="divider">

@@ -31,6 +31,8 @@ class SendBookingInvoiceJob implements ShouldQueue
      */
     public function handle(WhatsAppService $whatsAppService): void
     {
+        $this->booking->loadMissing(['user', 'client', 'service']);
+
         $whatsAppService->sendInvoiceCreated($this->booking, $this->invoice);
     }
 }
