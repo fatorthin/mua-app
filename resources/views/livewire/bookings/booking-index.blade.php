@@ -40,13 +40,23 @@
                 </select>
 
                 {{-- Custom Date Picker --}}
-                <div x-data="{ hasVal: @entangle('dateFilter') !== '' }" class="relative w-full sm:w-auto">
-                    <input wire:model.live="dateFilter" @change="hasVal = $event.target.value !== ''" type="date"
-                        class="w-full rounded-lg border-gray-300 text-sm focus:ring-pink-500 sm:w-auto bg-white">
-                    <span x-show="!hasVal"
-                        class="pointer-events-none absolute inset-0 flex items-center rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-400">
-                        Pilih Tanggal
-                    </span>
+                <div class="relative w-full sm:w-auto">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <input wire:model.live="dateFilter" type="date"
+                        class="w-full sm:w-auto pl-9 {{ $dateFilter ? 'pr-8' : 'pr-3' }} rounded-lg border-gray-300 text-sm focus:ring-pink-500 bg-white text-gray-700 font-medium">
+                    @if ($dateFilter)
+                        <button type="button" wire:click="$set('dateFilter', '')"
+                            class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600"
+                            title="Hapus filter tanggal">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    @endif
                 </div>
 
                 {{-- Mode Kalender --}}
