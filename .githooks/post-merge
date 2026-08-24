@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+HOOK_SCRIPT="$REPO_ROOT/scripts/build-on-pull.sh"
+
+if [[ -f "$HOOK_SCRIPT" ]]; then
+  echo "[post-merge] Running frontend build after pull..."
+  "$HOOK_SCRIPT"
+else
+  echo "[post-merge] No build script found; skipping."
+fi
