@@ -52,11 +52,30 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 p-4 sm:p-6">
+            <main class="flex-1 p-4 pb-24 sm:p-6 sm:pb-6">
                 {{ $slot }}
             </main>
         </div>
     </div>
+
+    {{-- Mobile PWA Bottom Navigation --}}
+    <x-bottom-navigation />
+
+    {{-- PWA Install Prompt Banner --}}
+    <x-pwa-install-banner />
+
+    {{-- Offline Toast Indicator --}}
+    <div x-data="{ isOnline: navigator.onLine }"
+         @online.window="isOnline = true"
+         @offline.window="isOnline = false"
+         x-show="!isOnline"
+         x-transition
+         class="fixed top-2 inset-x-4 max-w-sm mx-auto z-50 rounded-xl bg-gray-900/90 text-white text-xs px-3 py-2 text-center backdrop-blur shadow-lg flex items-center justify-center gap-2"
+         x-cloak>
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span>Mode Offline: Menampilkan data cache.</span>
+    </div>
+
     @livewireScripts
     <script>
         if ('serviceWorker' in navigator) {

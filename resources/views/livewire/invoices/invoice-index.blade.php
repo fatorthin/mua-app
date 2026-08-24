@@ -19,15 +19,8 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                {{-- Status filter --}}
-                <select wire:model.live="statusFilter" class="rounded-lg border-gray-300 text-xs focus:ring-pink-500">
-                    <option value="">Semua Status</option>
-                    <option value="unpaid">Belum Dibayar</option>
-                    <option value="paid">Sudah Dibayar</option>
-                </select>
-
                 {{-- Month filter --}}
-                <select wire:model.live="periodMonth" class="rounded-lg border-gray-300 text-xs focus:ring-pink-500">
+                <select wire:model.live="periodMonth" class="rounded-lg border-gray-300 text-xs focus:ring-pink-500 bg-white">
                     <option value="">Semua Bulan</option>
                     @foreach (range(1, 12) as $m)
                         <option value="{{ $m }}">{{ DateTime::createFromFormat('!m', $m)->format('F') }}</option>
@@ -35,7 +28,7 @@
                 </select>
 
                 {{-- Year filter --}}
-                <select wire:model.live="periodYear" class="rounded-lg border-gray-300 text-xs focus:ring-pink-500">
+                <select wire:model.live="periodYear" class="rounded-lg border-gray-300 text-xs focus:ring-pink-500 bg-white">
                     <option value="">Semua Tahun</option>
                     @foreach (range(date('Y'), date('Y') - 3) as $y)
                         <option value="{{ $y }}">{{ $y }}</option>
@@ -44,7 +37,7 @@
 
                 {{-- Export CSV button --}}
                 <button wire:click="exportCsv"
-                    class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+                    class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-emerald-700 active:scale-95 transition-all shadow-sm"
                     title="Download Rekap CSV">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -52,6 +45,22 @@
                     Export CSV
                 </button>
             </div>
+        </div>
+
+        {{-- Horizontal Status Filter Chips --}}
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 text-xs no-scrollbar">
+            <button type="button" wire:click="$set('statusFilter', '')"
+                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === '' ? 'bg-pink-600 text-white shadow-sm font-semibold' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                Semua Status
+            </button>
+            <button type="button" wire:click="$set('statusFilter', 'unpaid')"
+                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'unpaid' ? 'bg-amber-600 text-white shadow-sm font-semibold' : 'bg-amber-50 text-amber-700 hover:bg-amber-100' }}">
+                Belum Lunas (Unpaid)
+            </button>
+            <button type="button" wire:click="$set('statusFilter', 'paid')"
+                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'paid' ? 'bg-green-600 text-white shadow-sm font-semibold' : 'bg-green-50 text-green-700 hover:bg-green-100' }}">
+                Sudah Lunas (Paid)
+            </button>
         </div>
 
         {{-- Summary KPI Cards --}}

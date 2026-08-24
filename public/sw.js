@@ -1,6 +1,8 @@
-const CACHE_NAME = 'mua-manager-v2';
+const CACHE_NAME = 'mua-manager-v3';
 const STATIC_ASSETS = [
     '/manifest.json',
+    '/offline.html',
+    '/lip-matt.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -27,11 +29,15 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     // Network-first strategy for API/auth requests
-    if (event.request.url.includes('/api/') || event.request.url.includes('/login')) {
+    if (event.request.url.includes('/api/') || event.request.url.includes('/login') || event.request.url.includes('/logout')) {
         return;
     }
 
-    // Only handle same-origin and known safe cross-origin requests
+    // Only handle same-origin and GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
     const url = new URL(event.request.url);
     if (url.origin !== self.location.origin) {
         return;
@@ -40,7 +46,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                if (response && response.status === 200 && event.request.method === 'GET') {
+                if (response && response.status === 200) {
                     const responseClone = response.clone();
                     caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, responseClone);
@@ -48,10 +54,18 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             })
-            .catch(() => {
-                return caches.match(event.request).then((cached) => {
-                    return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-                });
+            .catch(async () => {
+                const cached = await caches.match(event.request);
+                if (cached) {
+                    return cached;
+                }
+
+                // If navigating to a page and offline, serve the offline fallback page
+                if (event.request.mode === 'navigate') {
+                    return caches.match('/offline.html');
+                }
+
+                return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
             })
     );
 });

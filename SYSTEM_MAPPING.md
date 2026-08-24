@@ -142,11 +142,18 @@ flowchart TB
     - CRUD katalog layanan (nama, deskripsi, harga, durasi dalam menit, status `is_active`).
 
 ### F. Modul Profil Studio & Panel Admin
-
 - **Model**: `app/Models/User.php`
 - **Tabel**: `users`
-- **Volt Component**: `resources/views/livewire/profile/update-profile-information-form.blade.php`: Form data profil studio, upload logo invoice, catatan pembayaran/footer invoice, nomor WhatsApp, Instagram, TikTok, serta kontrol pairing gateway WA (QR / Code).
+- **Volt Component**: `resources/views/livewire/profile/update-profile-information-form.blade.php`: Form data profil studio, upload logo invoice, catatan pembayaran/footer invoice, nomor WhatsApp, Instagram, TikTok, tombol Buat Device ID Baru, serta kontrol pairing gateway WA (QR / Code).
 - **Admin Panel**: `app/Livewire/Admin/UserIndex.php` & `resources/views/livewire/admin/user-index.blade.php`: Pengelolaan seluruh akun MUA dan toggle aktif/nonaktif (`is_active`).
+
+### G. Modul PWA & Mobile UX Components
+- **PWA Manifest & Icons**: `public/manifest.json`, `public/lip-matt.png`, `public/icon-192.png`, `public/icon-512.png`.
+- **Service Worker**: `public/sw.js` (Cache manifest, assets, and offline navigation fallback).
+- **Offline Fallback Page**: `public/offline.html`.
+- **Mobile Bottom Navigation**: `resources/views/components/bottom-navigation.blade.php` (Sticky floating bottom bar with FAB '+ Booking' in center).
+- **PWA Install Prompt Banner**: `resources/views/components/pwa-install-banner.blade.php` (Captures `beforeinstallprompt` with 7-day dismissal memory).
+- **Horizontal Filter Chips**: Mobile-first filter status chips in `booking-index.blade.php` and `invoice-index.blade.php`.
 
 ---
 

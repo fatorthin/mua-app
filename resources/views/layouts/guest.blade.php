@@ -20,23 +20,30 @@
 
 <body class="font-sans antialiased bg-[linear-gradient(180deg,#fff7fb_0%,#ffffff_45%,#fff1f6_100%)] text-gray-900">
     <div class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-        <div class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_rgba(236,72,153,0.12)]">
-            <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(244,114,182,0.22),_transparent_35%),linear-gradient(180deg,#fff7fb_0%,#ffe4ef_100%)] p-10">
+        <div
+            class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_rgba(236,72,153,0.12)]">
+            <div
+                class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(244,114,182,0.22),_transparent_35%),linear-gradient(180deg,#fff7fb_0%,#ffe4ef_100%)] p-10">
                 <div>
-                    <a href="/" wire:navigate class="inline-flex items-center gap-3 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-pink-600 shadow-sm ring-1 ring-pink-100 backdrop-blur">
+                    <a href="/" wire:navigate
+                        class="inline-flex items-center gap-3 rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-pink-600 shadow-sm ring-1 ring-pink-100 backdrop-blur">
                         <span class="text-xl">💄</span>
                         <span>MUA Manager</span>
                     </a>
                     <div class="mt-12 max-w-md">
-                        <p class="inline-flex rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-pink-700">Platform MUA Indonesia</p>
-                        <h1 class="mt-6 text-4xl font-bold leading-tight text-gray-900">Kelola booking, klien, dan invoice dalam satu alur kerja yang rapi.</h1>
-                        <p class="mt-5 text-base leading-7 text-gray-600">Masuk ke dashboard untuk mengatur jadwal makeup, meninjau invoice, dan menjaga operasional bisnis tetap profesional.</p>
+                        <p
+                            class="inline-flex rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-pink-700">
+                            Platform MUA Indonesia</p>
+                        <h1 class="mt-6 text-4xl font-bold leading-tight text-gray-900">Kelola booking, klien, dan
+                            invoice dalam satu alur kerja yang rapi.</h1>
+                        <p class="mt-5 text-base leading-7 text-gray-600">Masuk ke dashboard untuk mengatur jadwal
+                            makeup, meninjau invoice, dan menjaga operasional bisnis tetap profesional.</p>
                     </div>
                 </div>
 
                 <div class="grid gap-4">
                     <div class="rounded-2xl bg-white/80 p-5 ring-1 ring-pink-100 backdrop-blur">
-                        <p class="text-sm font-semibold text-gray-800">Fitur utama</p>
+                        <p class="text-sm font-semibold text-gray-800">Fitur utama :</p>
                         <div class="mt-3 grid gap-3 text-sm text-gray-600">
                             <p>Booking management yang cepat dan anti bentrok.</p>
                             <p>Invoice otomatis yang siap kirim ke klien.</p>
@@ -49,7 +56,8 @@
             <div class="flex w-full lg:w-1/2 items-center justify-center bg-white px-5 py-8 sm:px-8 lg:px-12">
                 <div class="w-full max-w-md">
                     <div class="mb-8 lg:hidden">
-                        <a href="/" wire:navigate class="inline-flex items-center gap-3 rounded-full bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-600 ring-1 ring-pink-100">
+                        <a href="/" wire:navigate
+                            class="inline-flex items-center gap-3 rounded-full bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-600 ring-1 ring-pink-100">
                             <span class="text-xl">💄</span>
                             <span>MUA Manager</span>
                         </a>
