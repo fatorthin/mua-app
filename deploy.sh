@@ -138,12 +138,46 @@ else
   php artisan view:cache
 fi
 
-if [[ -f package-lock.json ]] && command -v npm >/dev/null 2>&1; then
-  npm ci
-  npm run build
-elif [[ -f package.json ]] && command -v npm >/dev/null 2>&1; then
-  npm install --no-audit --no-fund
-  npm run build
+if [[ -f package.json ]]; then
+  if [[ "$use_docker" == "true" ]]; then
+    if run_in_app_container "command -v npm >/dev/null 2>&1"; then
+      log "Running frontend build inside docker service 'app'"
+
+      if [[ -f package-lock.json ]]; then
+        run_in_app_container "npm ci --no-audit --no-fund"
+      else
+        run_in_app_container "npm install --no-audit --no-fund"
+      fi
+
+      run_in_app_container "npm run build"
+    elif command -v npm >/dev/null 2>&1; then
+      log "npm not found in container; running frontend build on host"
+
+      if [[ -f package-lock.json ]]; then
+        npm ci --no-audit --no-fund
+      else
+        npm install --no-audit --no-fund
+      fi
+
+      npm run build
+    else
+      log "Skipping frontend build: npm not found in both container and host"
+    fi
+  elif command -v npm >/dev/null 2>&1; then
+    log "Running frontend build on host"
+
+    if [[ -f package-lock.json ]]; then
+      npm ci --no-audit --no-fund
+    else
+      npm install --no-audit --no-fund
+    fi
+
+    npm run build
+  else
+    log "Skipping frontend build: npm not found on host"
+  fi
+else
+  log "Skipping frontend build: package.json not found"
 fi
 
 log "Deploy finished successfully"
