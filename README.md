@@ -120,22 +120,10 @@ Saat booking dikonfirmasi dan invoice dibuat, sistem akan:
 
 ---
 
-## Struktur Direktori Penting
+## 📖 Dokumentasi Arsitektur & Peta Sistem
 
-```
-app/
-├── Http/Controllers/InvoiceController.php   # Preview & download PDF
-├── Livewire/
-│   ├── Bookings/                            # Form, list, detail booking
-│   ├── Clients/                             # Manajemen klien
-│   ├── Invoices/                            # List invoice & update status
-│   └── Dashboard.php                        # Ringkasan statistik
-├── Models/                                  # Booking, Client, Invoice, Service, User
-└── Services/WhatsAppService.php             # Kirim invoice PDF via WA gateway
-
-resources/views/invoices/pdf.blade.php       # Template invoice (Playfair + Montserrat)
-database/migrations/                         # Skema lengkap semua tabel
-```
+Untuk panduan teknis lengkap, diagram alur, skema relasi database (ERD), dan matriks file yang harus diubah saat memodifikasi fitur, silakan baca:
+👉 **[SYSTEM_MAPPING.md](SYSTEM_MAPPING.md)**
 
 ---
 

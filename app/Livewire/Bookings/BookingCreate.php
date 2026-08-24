@@ -17,6 +17,7 @@ class BookingCreate extends Component
     public string $booking_time = '';
     public string $location = '';
     public string $notes = '';
+    public string $transport_fee = '';
     public bool $is_dp_paid = false;
     public string $dp_amount = '';
 
@@ -38,6 +39,7 @@ class BookingCreate extends Component
             'booking_time' => 'required',
             'location'     => 'nullable|string|max:500',
             'notes'        => 'nullable|string|max:1000',
+            'transport_fee'=> 'nullable|numeric|min:0',
             'is_dp_paid'   => 'boolean',
             'dp_amount'    => $this->is_dp_paid ? 'required|numeric|min:0' : 'nullable|numeric|min:0',
             'new_client_name'  => $this->newClient ? 'required|string|max:100' : 'nullable',
@@ -67,10 +69,10 @@ class BookingCreate extends Component
         'selectedServices.*.price.min'            => 'Harga tidak boleh negatif.',
     ];
 
-    public function updatedSelectedServices(mixed $value, string $key): void
+    public function updatedSelectedServices(mixed $value, ?string $key = null): void
     {
         // When service_id changes, auto-fill the price from service
-        if (str_ends_with($key, '.service_id') && $value) {
+        if ($key && str_ends_with($key, '.service_id') && $value) {
             $index   = explode('.', $key)[0];
             $service = Service::where('user_id', Auth::id())->find($value);
             if ($service) {
@@ -153,9 +155,12 @@ class BookingCreate extends Component
             ];
         }
 
+        $transportFee = (float) ($this->transport_fee !== '' ? $this->transport_fee : 0);
+        $grandTotal   = $totalPrice + $transportFee;
+
         $dpAmount = $this->is_dp_paid ? (float) ($this->dp_amount !== '' ? $this->dp_amount : 0) : 0;
-        if ($dpAmount > $totalPrice) {
-            $this->addError('dp_amount', 'Nominal DP tidak boleh melebihi total biaya layanan.');
+        if ($dpAmount > $grandTotal) {
+            $this->addError('dp_amount', 'Nominal DP tidak boleh melebihi total biaya booking (layanan + transport).');
             return;
         }
 
@@ -181,17 +186,18 @@ class BookingCreate extends Component
         $primaryServiceId = $serviceItems[0]['service']->id;
 
         $booking = Booking::create([
-            'user_id'      => $user->id,
-            'client_id'    => $clientId,
-            'service_id'   => $primaryServiceId,
-            'booking_date' => $bookingDatetime,
-            'duration'     => $totalDuration,
-            'price'        => $totalPrice,
-            'status'       => 'confirmed',
-            'location'     => $this->location,
-            'notes'        => $this->notes,
-            'is_dp_paid'   => $this->is_dp_paid,
-            'dp_amount'    => $dpAmount,
+            'user_id'       => $user->id,
+            'client_id'     => $clientId,
+            'service_id'    => $primaryServiceId,
+            'booking_date'  => $bookingDatetime,
+            'duration'      => $totalDuration,
+            'price'         => $grandTotal,
+            'transport_fee' => $transportFee,
+            'status'        => 'confirmed',
+            'location'      => $this->location,
+            'notes'         => $this->notes,
+            'is_dp_paid'    => $this->is_dp_paid,
+            'dp_amount'     => $dpAmount,
         ]);
 
         foreach ($serviceItems as $item) {
@@ -206,12 +212,12 @@ class BookingCreate extends Component
 
         // Auto-create invoice
         $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT);
-        $invoiceTotal = max(0, $totalPrice - $dpAmount);
+        $invoiceTotal  = max(0, $grandTotal - $dpAmount);
         $invoice = Invoice::create([
             'booking_id'     => $booking->id,
             'invoice_number' => $invoiceNumber,
             'subtotal'       => $totalPrice,
-            'tax'            => 0,
+            'tax'            => $transportFee,
             'total'          => $invoiceTotal,
             'status'         => 'unpaid',
             'due_date'       => now()->addDays(7)->toDateString(),

@@ -15,6 +15,7 @@ class ClientIndex extends Component
     public ?int $editingId = null;
     public string $name = '';
     public string $phone = '';
+    public string $email = '';
     public string $notes = '';
 
     public function updatingSearch(): void
@@ -27,13 +28,14 @@ class ClientIndex extends Component
         return [
             'name'  => 'required|string|max:100',
             'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
             'notes' => 'nullable|string|max:500',
         ];
     }
 
     public function openCreate(): void
     {
-        $this->reset(['editingId', 'name', 'phone', 'notes']);
+        $this->reset(['editingId', 'name', 'phone', 'email', 'notes']);
         $this->showModal = true;
     }
 
@@ -43,6 +45,7 @@ class ClientIndex extends Component
         $this->editingId = $id;
         $this->name      = $client->name;
         $this->phone     = $this->stripPhoneCountryPrefix($client->phone ?? '');
+        $this->email     = $client->email ?? '';
         $this->notes     = $client->notes ?? '';
         $this->showModal = true;
     }
@@ -89,6 +92,7 @@ class ClientIndex extends Component
             'user_id' => auth()->id(),
             'name'    => $this->name,
             'phone'   => $this->normalizePhoneWith62($this->phone),
+            'email'   => $this->email ?: null,
             'notes'   => $this->notes,
         ];
 

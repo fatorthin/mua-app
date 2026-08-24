@@ -90,6 +90,26 @@ new class extends Component {
         $this->dispatch('profile-updated', name: $user->name);
     }
 
+    public function generateNewWhatsappDevice(): void
+    {
+        $user = $this->persistRealtimeWhatsappFields();
+        $service = app(WhatsAppService::class);
+        $newDeviceId = 'user-' . $user->id . '-' . substr(md5($user->id . '-' . ($user->email ?? 'mua') . '-' . time() . '-' . uniqid()), 0, 8);
+        $created = $service->createDevice($user, $newDeviceId);
+
+        if (!$created['ok']) {
+            $this->setWhatsappFeedback($created['message'] ?? 'Gagal membuat device WhatsApp baru.', 'error');
+            return;
+        }
+
+        $user->refresh();
+        $this->whatsapp_device_id = $user->whatsapp_device_id ?? '';
+        $this->hydrateWhatsappState($user);
+        $this->whatsapp_qr_link = null;
+        $this->whatsapp_pair_code = null;
+        $this->setWhatsappFeedback('Device WhatsApp baru (' . $this->whatsapp_device_id . ') berhasil dibuat! Silakan buka QR Login atau Ambil Pair Code.', 'success');
+    }
+
     public function connectWhatsappQr(): void
     {
         $user = $this->persistRealtimeWhatsappFields();
@@ -104,6 +124,7 @@ new class extends Component {
             }
 
             $user->refresh();
+            $this->whatsapp_device_id = $user->whatsapp_device_id ?? '';
         }
 
         $result = $service->requestLoginQr($user->fresh());
@@ -138,6 +159,7 @@ new class extends Component {
             }
 
             $user->refresh();
+            $this->whatsapp_device_id = $user->whatsapp_device_id ?? '';
         }
 
         $result = $service->requestPairingCode($user->fresh(), $validated['whatsapp_pair_phone']);
@@ -149,6 +171,7 @@ new class extends Component {
 
         $this->whatsapp_pair_code = $result['pair_code'] ?? null;
         $this->whatsapp_qr_link = null;
+        $this->whatsapp_device_id = $user->fresh()->whatsapp_device_id ?? '';
         $this->setWhatsappFeedback('Pair code berhasil dibuat. Masukkan kode ini di aplikasi WhatsApp.', 'success');
     }
 
@@ -327,7 +350,13 @@ new class extends Component {
                 </div>
             @endif
 
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <x-secondary-button type="button" wire:click="generateNewWhatsappDevice" class="text-pink-600 border-pink-200 hover:bg-pink-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Buat Device ID Baru
+                </x-secondary-button>
                 <x-secondary-button type="button" wire:click="connectWhatsappQr">
                     Buka QR Login
                 </x-secondary-button>

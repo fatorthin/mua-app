@@ -12,22 +12,27 @@ new class extends Component {
 }; ?>
 
 {{-- Sidebar Navigation --}}
-<aside x-data="{ mobileOpen: false }" @toggle-sidebar.window="mobileOpen = !mobileOpen" class="relative">
+<aside class="relative" @keydown.window.escape="sidebarOpen = false">
 
     {{-- Sidebar --}}
-    <div :class="mobileOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'"
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-200 sm:sticky sm:top-0 sm:h-screen sm:flex sm:inset-auto">
+    <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-200 ease-in-out sm:sticky sm:top-0 sm:h-screen sm:flex sm:inset-auto">
 
-        {{-- Logo --}}
-        <div class="h-16 flex items-center px-6 border-b border-gray-200 shrink-0">
+        {{-- Logo & Mobile Close button --}}
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 shrink-0">
             <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
                 <span class="text-2xl">💄</span>
                 <span class="font-bold text-lg text-pink-600">MUA Manager</span>
             </a>
+            <button @click="sidebarOpen = false" class="sm:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100" aria-label="Tutup Menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
 
         {{-- Nav links --}}
-        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" @click="if (window.innerWidth < 640) sidebarOpen = false">
             <a href="{{ route('dashboard') }}" wire:navigate
                 class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-pink-50 text-pink-600' : 'text-gray-600 hover:bg-gray-50' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,6 +124,15 @@ new class extends Component {
     </div>
 
     {{-- Overlay for mobile --}}
-    <div x-show="mobileOpen" @click="mobileOpen = false" class="fixed inset-0 z-30 bg-black bg-opacity-50 sm:hidden">
+    <div x-show="sidebarOpen"
+        x-transition:enter="transition-opacity ease-linear duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="sidebarOpen = false"
+        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden"
+        x-cloak>
     </div>
 </aside>

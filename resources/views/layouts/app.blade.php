@@ -23,7 +23,7 @@
     @livewireStyles
 </head>
 
-<body class="font-sans antialiased bg-gray-50">
+<body class="font-sans antialiased bg-gray-50" x-data="{ sidebarOpen: false }">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <livewire:layout.navigation />
@@ -34,8 +34,8 @@
             <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
                 <div class="flex items-center gap-3">
                     {{-- Mobile sidebar toggle --}}
-                    <button @click="$dispatch('toggle-sidebar')" class="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="sidebarOpen = !sidebarOpen" class="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-500" aria-label="Toggle Navigation">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
@@ -58,6 +58,15 @@
         </div>
     </div>
     @livewireScripts
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('ServiceWorker registration error:', err);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>

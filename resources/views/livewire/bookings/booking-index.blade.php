@@ -79,9 +79,9 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <div class="flex items-center justify-end gap-2">
+                                <div class="flex items-center justify-end gap-2.5">
                                     <a href="{{ route('bookings.show', $booking) }}" wire:navigate
-                                        class="text-xs text-pink-600 hover:underline">Detail</a>
+                                        class="text-xs text-pink-600 hover:underline font-medium">Detail</a>
                                     @if ($booking->status === 'pending')
                                         <button wire:click="confirmBooking({{ $booking->id }})"
                                             wire:confirm="Konfirmasi booking ini?"
@@ -92,6 +92,9 @@
                                             wire:confirm="Tandai booking ini sebagai selesai?"
                                             class="text-xs text-green-600 hover:underline">Selesai</button>
                                     @endif
+                                    <button wire:click="sendReminderNow({{ $booking->id }})"
+                                        wire:confirm="Kirim pengingat WhatsApp ke {{ $booking->client?->name ?? 'klien' }} sekarang?"
+                                        class="text-xs text-emerald-600 hover:underline" title="Kirim Pengingat WA">Reminder WA</button>
                                     <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
                                         class="text-xs text-gray-600 hover:underline">Edit</a>
                                     <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?"
@@ -156,6 +159,9 @@
                                 wire:confirm="Tandai booking ini sebagai selesai?"
                                 class="text-sm font-medium text-green-600 hover:text-green-700">Selesai</button>
                         @endif
+                        <button wire:click="sendReminderNow({{ $booking->id }})"
+                            wire:confirm="Kirim pengingat WhatsApp ke {{ $booking->client?->name ?? 'klien' }} sekarang?"
+                            class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Reminder WA</button>
                         <a href="{{ route('bookings.edit', $booking) }}" wire:navigate
                             class="text-sm font-medium text-gray-600 hover:text-gray-700">Edit</a>
                         <button wire:click="delete({{ $booking->id }})" wire:confirm="Hapus booking ini?"

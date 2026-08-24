@@ -271,45 +271,61 @@
             </tbody>
         </table>
 
+        @php
+            $transportFee = (float) ($invoice->booking->transport_fee ?? 0);
+            $taxAmount = (float) ($invoice->tax ?? 0);
+            $otherFee = ($taxAmount > 0 && $taxAmount != $transportFee) ? $taxAmount : 0;
+            $totalBooking = (float) $invoice->subtotal + $transportFee + $otherFee;
+            $dpAmount = ($invoice->booking && $invoice->booking->is_dp_paid && (float) $invoice->booking->dp_amount > 0)
+                ? (float) $invoice->booking->dp_amount
+                : 0;
+            $kekurangan = max(0, $totalBooking - $dpAmount);
+        @endphp
+
         <table class="summary-table">
             <tr>
-                <td class="summary-label">Subtotal</td>
+                <td class="summary-label">Subtotal Layanan</td>
                 <td class="value" style="font-weight: normal;">Rp
                     {{ number_format((float) $invoice->subtotal, 0, ',', '.') }}</td>
             </tr>
-            @if ($invoice->tax > 0)
+            @if ($transportFee > 0)
+                <tr>
+                    <td class="summary-label">Biaya Transport</td>
+                    <td class="value" style="font-weight: normal;">Rp
+                        {{ number_format($transportFee, 0, ',', '.') }}</td>
+                </tr>
+            @endif
+            @if ($otherFee > 0)
                 <tr>
                     <td class="summary-label">Pajak / Fee</td>
                     <td class="value" style="font-weight: normal;">Rp
-                        {{ number_format((float) $invoice->tax, 0, ',', '.') }}</td>
+                        {{ number_format($otherFee, 0, ',', '.') }}</td>
                 </tr>
             @endif
-            @if ($invoice->booking->is_dp_paid && floatval($invoice->booking->dp_amount) > 0)
-                <tr class="divider">
+            @if ($dpAmount > 0)
+                <tr>
                     <td class="summary-label">Total DP</td>
                     <td class="value" style="font-weight: normal;">Rp
-                        {{ number_format((float) $invoice->booking->dp_amount, 0, ',', '.') }}</td>
+                        {{ number_format($dpAmount, 0, ',', '.') }}</td>
+                </tr>
+                <tr class="divider">
+                    <td colspan="2"></td>
                 </tr>
                 <tr class="summary-total">
                     <td>Total Booking</td>
-                    <td class="value">Rp {{ number_format((float) $invoice->total, 0, ',', '.') }}</td>
+                    <td class="value">Rp {{ number_format($totalBooking, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="summary-total" style="padding-top: 4px;">
                     <td>Kekurangan</td>
-                    <td class="value">Rp
-                        {{ number_format((float) ($invoice->total - $invoice->booking->dp_amount), 0, ',', '.') }}</td>
+                    <td class="value">Rp {{ number_format($kekurangan, 0, ',', '.') }}</td>
                 </tr>
             @else
                 <tr class="divider">
                     <td colspan="2"></td>
                 </tr>
                 <tr class="summary-total">
-                    <td>Total Booking</td>
-                    <td class="value">Rp {{ number_format((float) $invoice->total, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="summary-total" style="padding-top: 4px;">
-                    <td>Kekurangan</td>
-                    <td class="value">Rp {{ number_format((float) $invoice->total, 0, ',', '.') }}</td>
+                    <td>Total Tagihan</td>
+                    <td class="value">Rp {{ number_format($totalBooking, 0, ',', '.') }}</td>
                 </tr>
             @endif
         </table>

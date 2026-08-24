@@ -42,6 +42,13 @@
                     <p class="text-xs uppercase tracking-wider text-gray-500 mb-1">Total Harga</p>
                     <p class="font-semibold text-gray-800">{{ $booking->formatted_price }}</p>
                 </div>
+                @if ($booking->transport_fee > 0)
+                    <div class="rounded-lg border border-blue-100 p-4 bg-blue-50">
+                        <p class="text-xs uppercase tracking-wider text-blue-700 mb-1">Biaya Transport</p>
+                        <p class="font-semibold text-blue-800">Rp
+                            {{ number_format($booking->transport_fee, 0, ',', '.') }}</p>
+                    </div>
+                @endif
                 @if ($booking->is_dp_paid)
                     <div class="rounded-lg border border-green-100 p-4 bg-green-50">
                         <p class="text-xs uppercase tracking-wider text-green-700 mb-1">DP Dibayar</p>
@@ -144,9 +151,32 @@
                 <p class="text-sm text-gray-500">Invoice belum tersedia.</p>
             @endif
 
-            <div class="mt-5 flex flex-wrap gap-2">
-                <a href="{{ route('bookings.edit', $booking) }}" wire:navigate class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Edit
-                    Booking</a>
+            <div class="mt-5 flex flex-wrap items-center gap-2">
+                <a href="{{ route('bookings.edit', $booking) }}" wire:navigate class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                    Edit Booking
+                </a>
+
+                @if ($booking->invoice)
+                    <a href="{{ route('invoices.pdf', $booking->invoice) }}" target="_blank" class="inline-flex items-center gap-1.5 bg-pink-50 text-pink-700 border border-pink-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        Lihat Invoice (PDF)
+                    </a>
+                @endif
+
+                @if ($booking->client && $booking->client->phone)
+                    @php
+                        $cleanPhone = preg_replace('/\D+/', '', $booking->client->phone);
+                        $waHref = 'https://wa.me/' . $cleanPhone;
+                    @endphp
+                    <a href="{{ $waHref }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                        </svg>
+                        Chat Klien via WhatsApp
+                    </a>
+                @endif
 
                 @php
                     $gcStart = $booking->booking_date->format('Ymd\THis');
@@ -156,15 +186,16 @@
                     $gcLocation = urlencode($booking->location ?: '');
                     $gcUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' . "&text={$gcTitle}" . "&dates={$gcStart}/{$gcEnd}" . "&details={$gcDetails}" . "&location={$gcLocation}";
                 @endphp
-                <a href="{{ $gcUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100">
+                <a href="{{ $gcUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM5 7V6h14v1H5zm2 4h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 15h2v2H7zm4 0h2v2h-2z" />
                     </svg>
                     Tambah ke Google Calendar
                 </a>
 
-                <a href="{{ route('bookings.index') }}" wire:navigate class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700">Kembali ke
-                    Daftar</a>
+                <a href="{{ route('bookings.index') }}" wire:navigate class="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 transition-colors">
+                    Kembali ke Daftar
+                </a>
             </div>
         </div>
     </div>

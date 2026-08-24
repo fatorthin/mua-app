@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Bookings;
 
+use App\Jobs\SendBookingReminderJob;
 use App\Models\Booking;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,6 +19,7 @@ class BookingIndex extends Component
     {
         $this->resetPage();
     }
+
     public function updatingStatusFilter(): void
     {
         $this->resetPage();
@@ -39,6 +41,17 @@ class BookingIndex extends Component
     public function completeBooking(int $id): void
     {
         Booking::where('user_id', auth()->id())->findOrFail($id)->update(['status' => 'completed']);
+    }
+
+    public function sendReminderNow(int $id): void
+    {
+        $booking = Booking::with(['client', 'service', 'user'])
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
+
+        SendBookingReminderJob::dispatch($booking);
+
+        session()->flash('success', 'Pengingat WhatsApp berhasil dijadwalkan untuk dikirim ke ' . ($booking->client?->name ?? 'klien') . '.');
     }
 
     public function render()

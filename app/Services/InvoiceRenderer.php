@@ -159,33 +159,46 @@ class InvoiceRenderer
         $sY += 20;
 
         $summaryX = 700;
-        imagestring($image, 3, $summaryX, $sY, 'Subtotal', $muted);
+        imagestring($image, 3, $summaryX, $sY, 'Subtotal Layanan', $muted);
         imagestring($image, 3, 1000, $sY, 'Rp ' . number_format((float) $invoice->subtotal, 0, ',', '.'), $dark);
 
-        if ($invoice->tax > 0) {
+        $transportFee = (float) ($invoice->booking->transport_fee ?? 0);
+        $taxAmount    = (float) ($invoice->tax ?? 0);
+        $otherFee     = ($taxAmount > 0 && $taxAmount != $transportFee) ? $taxAmount : 0;
+        $totalBooking = (float) $invoice->subtotal + $transportFee + $otherFee;
+
+        if ($transportFee > 0) {
             $sY += 34;
-            imagestring($image, 3, $summaryX, $sY, 'Pajak / Fee', $muted);
-            imagestring($image, 3, 1000, $sY, 'Rp ' . number_format((float) $invoice->tax, 0, ',', '.'), $dark);
+            imagestring($image, 3, $summaryX, $sY, 'Biaya Transport', $muted);
+            imagestring($image, 3, 1000, $sY, 'Rp ' . number_format($transportFee, 0, ',', '.'), $dark);
         }
 
-        if ($invoice->booking->is_dp_paid && (float) $invoice->booking->dp_amount > 0) {
+        if ($otherFee > 0) {
+            $sY += 34;
+            imagestring($image, 3, $summaryX, $sY, 'Pajak / Fee', $muted);
+            imagestring($image, 3, 1000, $sY, 'Rp ' . number_format($otherFee, 0, ',', '.'), $dark);
+        }
+
+        $dpAmount = ($invoice->booking->is_dp_paid && (float) $invoice->booking->dp_amount > 0)
+            ? (float) $invoice->booking->dp_amount
+            : 0;
+        $kekurangan = max(0, $totalBooking - $dpAmount);
+
+        if ($dpAmount > 0) {
             $sY += 34;
             imagestring($image, 3, $summaryX, $sY, 'Total DP', $muted);
-            imagestring($image, 3, 1000, $sY, 'Rp ' . number_format((float) $invoice->booking->dp_amount, 0, ',', '.'), $dark);
+            imagestring($image, 3, 1000, $sY, 'Rp ' . number_format($dpAmount, 0, ',', '.'), $dark);
         }
 
         $sY += 44;
         imageline($image, $summaryX, $sY, 1180, $sY, $border);
         $sY += 14;
         imagestring($image, 5, $summaryX, $sY, 'Total Booking', $bold);
-        imagestring($image, 5, 1000, $sY, 'Rp ' . number_format((float) $invoice->total, 0, ',', '.'), $bold);
+        imagestring($image, 5, 1000, $sY, 'Rp ' . number_format($totalBooking, 0, ',', '.'), $bold);
 
-        $remaining = $invoice->booking->is_dp_paid && (float) $invoice->booking->dp_amount > 0
-            ? $invoice->total - $invoice->booking->dp_amount
-            : (float) $invoice->total;
         $sY += 34;
         imagestring($image, 5, $summaryX, $sY, 'Kekurangan', $bold);
-        imagestring($image, 5, 1000, $sY, 'Rp ' . number_format($remaining, 0, ',', '.'), $bold);
+        imagestring($image, 5, 1000, $sY, 'Rp ' . number_format($kekurangan, 0, ',', '.'), $bold);
 
         // Payment box
         $pY = $sY + 70;

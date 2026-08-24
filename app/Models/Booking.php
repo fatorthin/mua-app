@@ -19,6 +19,7 @@ class Booking extends Model
         'location',
         'notes',
         'price',
+        'transport_fee',
         'is_dp_paid',
         'dp_amount',
     ];
@@ -26,6 +27,7 @@ class Booking extends Model
     protected $casts = [
         'booking_date' => 'datetime',
         'price' => 'decimal:2',
+        'transport_fee' => 'decimal:2',
         'is_dp_paid' => 'boolean',
         'dp_amount' => 'decimal:2',
     ];

@@ -234,6 +234,41 @@
                     @endif
                 </div>
 
+                {{-- Biaya Transport --}}
+                <div class="mt-4 rounded-xl border border-gray-200 bg-white p-4 space-y-2">
+                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Biaya Transport (Opsional)
+                    </label>
+                    <div x-data="{
+                        formattedTransport: '',
+                        init() {
+                            this.updateFormatted($wire.get('transport_fee'));
+                            $watch(() => $wire.get('transport_fee'), val => this.updateFormatted(val));
+                        },
+                        updateFormatted(val) {
+                            if (!val) { this.formattedTransport = ''; return; }
+                            let num = val.toString().replace(/[^0-9]/g, '');
+                            this.formattedTransport = num ? parseInt(num, 10).toLocaleString('id-ID') : '';
+                        },
+                        handleInput(e) {
+                            let raw = e.target.value.replace(/[^0-9]/g, '');
+                            this.formattedTransport = raw ? parseInt(raw, 10).toLocaleString('id-ID') : '';
+                            $wire.set('transport_fee', raw);
+                        }
+                    }" class="relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-400 text-xs font-semibold">Rp</span>
+                        </div>
+                        <input type="text" x-model="formattedTransport" @input="handleInput($event)"
+                            placeholder="0 (jika ada ongkos transport)"
+                            class="w-full rounded-lg border-gray-300 pl-9 pr-3 py-2 text-sm focus:ring-pink-500 bg-white font-medium text-gray-700">
+                    </div>
+                    <p class="text-[11px] text-gray-400">Biaya transport akan ditambahkan ke total invoice tagihan.</p>
+                    @error('transport_fee')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="mt-4 rounded-xl border border-gray-200 bg-white p-4 space-y-3">
                     <label class="flex items-center gap-2 text-sm text-gray-700">
                         <input type="checkbox" wire:model.live="is_dp_paid"

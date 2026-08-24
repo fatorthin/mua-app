@@ -19,11 +19,14 @@ class WhatsAppService
             return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
         }
 
-        $payload = [];
         $preferredDeviceId = trim((string) $preferredDeviceId);
-        if ($preferredDeviceId !== '') {
-            $payload['device_id'] = $preferredDeviceId;
+        if ($preferredDeviceId === '') {
+            $preferredDeviceId = 'user-' . $user->id . '-' . substr(md5($user->id . '-' . ($user->email ?? 'mua') . '-' . time() . '-' . uniqid()), 0, 8);
         }
+
+        $payload = [
+            'device_id' => $preferredDeviceId,
+        ];
 
         $response = $this->authorizedRequest($auth)
             ->asJson()
@@ -56,13 +59,12 @@ class WhatsAppService
 
     public function refreshDeviceStatus(User $user): array
     {
-        ['url' => $url, 'auth' => $auth] = $this->gatewayConfigFor($user);
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($user);
 
         if ($url === '' || $auth === '') {
             return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
         }
 
-        $deviceId = trim((string) $user->whatsapp_device_id);
         if ($deviceId === '') {
             $user->forceFill([
                 'whatsapp_device_status' => null,
@@ -80,13 +82,13 @@ class WhatsAppService
         if ($response->failed()) {
             return [
                 'ok' => false,
-                'message' => $response->json('message') ?: 'Gagal mengambil status device WhatsApp.',
+                'message' => $response->json('message') ?: 'Gagal mengambil daftar device.',
             ];
         }
 
-        $devices = $response->json('results', []);
-        $device = collect(is_array($devices) ? $devices : [])->first(function ($item) use ($deviceId) {
-            return ($item['id'] ?? $item['device'] ?? null) === $deviceId;
+        $devices = collect((array) ($response->json('results') ?? []));
+        $device = $devices->first(function ($item) use ($deviceId) {
+            return is_array($item) && (($item['id'] ?? null) === $deviceId || ($item['device_id'] ?? null) === $deviceId);
         });
 
         $status = $device['state'] ?? 'not_found';
@@ -114,7 +116,11 @@ class WhatsAppService
         }
 
         if ($deviceId === '') {
-            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+            $created = $this->createDevice($user);
+            if (!$created['ok']) {
+                return $created;
+            }
+            $deviceId = $created['device_id'];
         }
 
         $response = $this->authorizedRequest($auth)
@@ -146,7 +152,11 @@ class WhatsAppService
         }
 
         if ($deviceId === '') {
-            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+            $created = $this->createDevice($user);
+            if (!$created['ok']) {
+                return $created;
+            }
+            $deviceId = $created['device_id'];
         }
 
         $response = $this->authorizedRequest($auth)
@@ -242,6 +252,74 @@ class WhatsAppService
         if ($response->failed()) {
             Log::warning('Failed sending WhatsApp reminder.', [
                 'booking_id' => $booking->id,
+                'status'     => $response->status(),
+                'response'   => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function sendPaymentReceipt(Booking $booking, Invoice $invoice, string $paymentMethod = 'Transfer Bank'): bool
+    {
+        $booking->loadMissing(['user', 'client', 'service']);
+
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($booking->user);
+
+        if ($url === '' || $auth === '') {
+            return false;
+        }
+
+        [$username, $password] = $this->parseBasicAuth($auth);
+        if ($username === '' || $password === '') {
+            Log::warning('WhatsApp gateway auth format invalid. Expected user:password.');
+            return false;
+        }
+
+        $phone = $this->toWhatsappJid($booking->client?->phone);
+        if ($phone === null) {
+            Log::warning('Skip WhatsApp receipt notification because client phone is empty.', [
+                'booking_id' => $booking->id,
+            ]);
+            return false;
+        }
+
+        $clientName = $booking->client?->name ?? 'Pelanggan';
+        $owner = $booking->user;
+        $studioName = $owner->studio_name ?? 'MUA STUDIO';
+
+        $lines = [
+            'Halo ' . $clientName . ', 👋',
+            '',
+            '🧾 *KUITANSI PEMBAYARAN LUNAS*',
+            '',
+            'Terima kasih! Pembayaran untuk booking Anda telah kami terima dan berstatus *LUNAS*:',
+            '📄 No. Invoice : ' . $invoice->invoice_number,
+            '💄 Layanan     : ' . ($booking->service?->name ?? '-'),
+            '💰 Total Bayar : Rp ' . number_format((float) $invoice->total, 0, ',', '.'),
+            '💳 Metode      : ' . $paymentMethod,
+            '📅 Tgl Lunas   : ' . now()->format('d/m/Y H:i'),
+            '',
+            'Kami sangat senang dapat melayani Anda. Sampai jumpa di hari H ya! 🌸',
+            '',
+            'Salam hangat,',
+            '*' . $studioName . '*',
+        ];
+
+        $response = Http::withBasicAuth($username, $password)
+            ->withHeaders($this->deviceHeaders($deviceId))
+            ->acceptJson()
+            ->post($url . '/send/message', [
+                'phone'   => $phone,
+                'message' => implode("\n", $lines),
+            ]);
+
+        if ($response->failed()) {
+            Log::warning('Failed sending WhatsApp payment receipt.', [
+                'booking_id' => $booking->id,
+                'invoice_id' => $invoice->id,
                 'status'     => $response->status(),
                 'response'   => $response->body(),
             ]);
@@ -443,6 +521,10 @@ class WhatsAppService
             'Tanggal Booking: ' . $bookingDateStr,
             'Total Layanan: Rp ' . $subtotal,
         ];
+
+        if ((float) $booking->transport_fee > 0) {
+            $lines[] = 'Biaya Transport: Rp ' . number_format((float) $booking->transport_fee, 0, ',', '.');
+        }
 
         if ($booking->is_dp_paid && (float) $booking->dp_amount > 0) {
             $lines[] = 'DP Dibayar: Rp ' . number_format((float) $booking->dp_amount, 0, ',', '.');

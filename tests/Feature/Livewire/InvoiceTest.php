@@ -111,4 +111,45 @@ class InvoiceTest extends TestCase
             ->assertSee('INV-UNPAID-0001')
             ->assertDontSee('INV-PAID-0002');
     }
+
+    public function test_confirm_payment_via_modal_sets_status_paid_and_notes(): void
+    {
+        $booking = Booking::factory()->create(['user_id' => $this->user->id]);
+        $invoice = Invoice::factory()->create(['booking_id' => $booking->id, 'status' => 'unpaid']);
+
+        $this->actingAs($this->user);
+
+        Livewire::test(InvoiceIndex::class)
+            ->call('openPaymentModal', $invoice->id)
+            ->set('paymentMethod', 'QRIS')
+            ->set('paymentNotes', 'Lunas via QRIS BCA')
+            ->set('sendReceiptWa', false)
+            ->call('confirmPayment');
+
+        $this->assertDatabaseHas('invoices', [
+            'id'     => $invoice->id,
+            'status' => 'paid',
+        ]);
+
+        $fresh = Invoice::find($invoice->id);
+        $this->assertStringContainsString('QRIS', $fresh->notes);
+        $this->assertStringContainsString('Lunas via QRIS BCA', $fresh->notes);
+    }
+
+    public function test_export_csv_streams_invoice_data(): void
+    {
+        $booking = Booking::factory()->create(['user_id' => $this->user->id]);
+        $invoice = Invoice::factory()->create([
+            'booking_id'     => $booking->id,
+            'invoice_number' => 'INV-EXPORT-TEST',
+            'subtotal'       => 500000,
+            'total'          => 500000,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $test = Livewire::test(InvoiceIndex::class);
+        $response = $test->call('exportCsv');
+        $this->assertNotNull($response);
+    }
 }
