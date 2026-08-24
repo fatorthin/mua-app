@@ -6,11 +6,12 @@
     @endif
 
     {{-- Filters --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5 space-y-3">
-        <div class="flex flex-col sm:flex-row gap-3">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5">
+        <div class="flex flex-col lg:flex-row gap-3">
+            {{-- Search input --}}
             <div class="relative flex-1">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama klien..."
-                    class="w-full pl-9 rounded-lg border-gray-300 text-sm focus:ring-pink-500 focus:border-pink-500">
+                    class="w-full pl-9 rounded-lg border-gray-300 text-sm focus:ring-pink-500 focus:border-pink-500 bg-white">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -18,48 +19,48 @@
                 </div>
             </div>
 
-            <div x-data="{ hasVal: @entangle('dateFilter') !== '' }" class="relative w-full sm:w-auto">
-                <input wire:model.live="dateFilter" @change="hasVal = $event.target.value !== ''" type="date"
-                    class="w-full rounded-lg border-gray-300 text-sm focus:ring-pink-500 sm:w-auto">
-                <span x-show="!hasVal"
-                    class="pointer-events-none absolute inset-0 flex items-center rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-400">
-                    Filter Tanggal
-                </span>
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                {{-- Status Filter Dropdown --}}
+                <select wire:model.live="statusFilter" class="w-full sm:w-auto rounded-lg border-gray-300 text-sm focus:ring-pink-500 bg-white">
+                    <option value="">Semua Status</option>
+                    <option value="pending">Menunggu (Pending)</option>
+                    <option value="confirmed">Dikonfirmasi</option>
+                    <option value="completed">Selesai</option>
+                    <option value="cancelled">Dibatalkan</option>
+                </select>
+
+                {{-- Quick Date Range Dropdown --}}
+                <select wire:model.live="quickDateFilter" class="w-full sm:w-auto rounded-lg border-gray-300 text-sm focus:ring-pink-500 bg-white">
+                    <option value="">Semua Waktu</option>
+                    <option value="today">Hari Ini</option>
+                    <option value="tomorrow">Besok</option>
+                    <option value="this_week">Minggu Ini</option>
+                    <option value="this_month">Bulan Ini</option>
+                    <option value="upcoming">Mendatang</option>
+                </select>
+
+                {{-- Custom Date Picker --}}
+                <div x-data="{ hasVal: @entangle('dateFilter') !== '' }" class="relative w-full sm:w-auto">
+                    <input wire:model.live="dateFilter" @change="hasVal = $event.target.value !== ''" type="date"
+                        class="w-full rounded-lg border-gray-300 text-sm focus:ring-pink-500 sm:w-auto bg-white">
+                    <span x-show="!hasVal"
+                        class="pointer-events-none absolute inset-0 flex items-center rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-400">
+                        Pilih Tanggal
+                    </span>
+                </div>
+
+                {{-- Mode Kalender --}}
+                <a href="{{ route('bookings.calendar') }}" wire:navigate
+                    class="hidden sm:inline-flex items-center justify-center border border-pink-200 text-pink-600 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-pink-50 whitespace-nowrap text-center">
+                    Kalender
+                </a>
+
+                {{-- Tambah Booking --}}
+                <a href="{{ route('bookings.create') }}" wire:navigate
+                    class="hidden sm:inline-flex items-center justify-center bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 whitespace-nowrap text-center shadow-sm">
+                    + Booking
+                </a>
             </div>
-
-            <a href="{{ route('bookings.calendar') }}" wire:navigate
-                class="hidden sm:inline-flex items-center justify-center border border-pink-200 text-pink-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-50 whitespace-nowrap text-center">
-                Mode Kalender
-            </a>
-
-            <a href="{{ route('bookings.create') }}" wire:navigate
-                class="hidden sm:inline-flex items-center justify-center bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 whitespace-nowrap text-center shadow-sm">
-                + Tambah Booking
-            </a>
-        </div>
-
-        {{-- Mobile & Desktop Horizontal Filter Chips --}}
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 text-xs no-scrollbar">
-            <button type="button" wire:click="$set('statusFilter', '')"
-                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === '' ? 'bg-pink-600 text-white shadow-sm font-semibold' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                Semua Status
-            </button>
-            <button type="button" wire:click="$set('statusFilter', 'pending')"
-                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'pending' ? 'bg-yellow-500 text-white shadow-sm font-semibold' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' }}">
-                Menunggu (Pending)
-            </button>
-            <button type="button" wire:click="$set('statusFilter', 'confirmed')"
-                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'confirmed' ? 'bg-blue-600 text-white shadow-sm font-semibold' : 'bg-blue-50 text-blue-700 hover:bg-blue-100' }}">
-                Dikonfirmasi
-            </button>
-            <button type="button" wire:click="$set('statusFilter', 'completed')"
-                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'completed' ? 'bg-green-600 text-white shadow-sm font-semibold' : 'bg-green-50 text-green-700 hover:bg-green-100' }}">
-                Selesai
-            </button>
-            <button type="button" wire:click="$set('statusFilter', 'cancelled')"
-                class="px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all duration-150 {{ $statusFilter === 'cancelled' ? 'bg-red-600 text-white shadow-sm font-semibold' : 'bg-red-50 text-red-700 hover:bg-red-100' }}">
-                Dibatalkan
-            </button>
         </div>
     </div>
 
@@ -198,8 +199,26 @@
             @endforelse
         </div>
 
+        {{-- Mobile Load More Button --}}
+        @if ($bookings->hasMorePages())
+            <div class="p-4 md:hidden text-center border-t border-gray-100 bg-gray-50/50">
+                <button wire:click="loadMore" wire:loading.attr="disabled"
+                    class="w-full py-2.5 px-4 bg-white border border-pink-200 text-pink-600 font-semibold text-xs rounded-xl shadow-sm hover:bg-pink-50 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <span wire:loading.remove wire:target="loadMore">Muat Lebih Banyak (+15)</span>
+                    <span wire:loading wire:target="loadMore" class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4 text-pink-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        Memuat data...
+                    </span>
+                </button>
+            </div>
+        @endif
+
+        {{-- Desktop Pagination --}}
         @if ($bookings->hasPages())
-            <div class="px-4 py-3 border-t border-gray-100">
+            <div class="hidden md:block px-4 py-3 border-t border-gray-100">
                 {{ $bookings->links() }}
             </div>
         @endif

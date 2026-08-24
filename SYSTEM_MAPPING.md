@@ -84,7 +84,7 @@ flowchart TB
 - **Model**: `app/Models/Booking.php`, `app/Models/BookingItem.php`
 - **Tabel**: `bookings` (termasuk kolom `transport_fee`, `dp_amount`, `is_dp_paid`), `booking_items`
 - **Livewire Components**:
-    - `app/Livewire/Bookings/BookingIndex.php` & `resources/views/livewire/bookings/booking-index.blade.php`: Tabel list booking, pencarian nama klien, filter status/tanggal, quick action (konfirmasi, selesai, kirim reminder WA instan, hapus).
+    - `app/Livewire/Bookings/BookingIndex.php` & `resources/views/livewire/bookings/booking-index.blade.php`: Tabel list booking, pencarian nama klien, dropdown filter status, dropdown rentang waktu cepat (Hari Ini, Besok, Minggu Ini, Bulan Ini, Mendatang), datepicker kustom, tombol Load More (+15) mobile, quick action (konfirmasi, selesai, kirim reminder WA instan, hapus).
     - `app/Livewire/Bookings/BookingCreate.php` & `resources/views/livewire/bookings/booking-create.blade.php`: Form booking multi-layanan, input biaya transport (`transport_fee`), deteksi bentrok jadwal otomatis, inline creation klien baru, kalkulasi DP & sisa tagihan, auto-generate invoice, auto-dispatch job WA.
     - `app/Livewire/Bookings/BookingEdit.php` & `resources/views/livewire/bookings/booking-edit.blade.php`: Edit multi-item layanan, input biaya transport, penyesuaian DP/harga total, collision check akurat, dan sinkronisasi otomatis ke `booking_items` & `invoices`.
     - `app/Livewire/Bookings/BookingCalendar.php` & `resources/views/livewire/bookings/booking-calendar.blade.php`: Grid visual kalender bulanan dengan badge status.

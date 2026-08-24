@@ -14,6 +14,8 @@ class BookingIndex extends Component
     public string $search = '';
     public string $statusFilter = '';
     public string $dateFilter = '';
+    public string $quickDateFilter = '';
+    public int $perPage = 15;
 
     public function updatingSearch(): void
     {
@@ -23,6 +25,30 @@ class BookingIndex extends Component
     public function updatingStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function updatingDateFilter(): void
+    {
+        $this->quickDateFilter = '';
+        $this->resetPage();
+    }
+
+    public function updatingQuickDateFilter(): void
+    {
+        $this->dateFilter = '';
+        $this->resetPage();
+    }
+
+    public function setQuickDate(string $val): void
+    {
+        $this->quickDateFilter = $val;
+        $this->dateFilter = '';
+        $this->resetPage();
+    }
+
+    public function loadMore(): void
+    {
+        $this->perPage += 15;
     }
 
     public function delete(int $id): void
@@ -61,8 +87,18 @@ class BookingIndex extends Component
             ->when($this->search, fn($q) => $q->whereHas('client', fn($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->dateFilter, fn($q) => $q->whereDate('booking_date', $this->dateFilter))
+            ->when(!$this->dateFilter && $this->quickDateFilter, function ($q) {
+                match ($this->quickDateFilter) {
+                    'today'      => $q->whereDate('booking_date', now()->toDateString()),
+                    'tomorrow'   => $q->whereDate('booking_date', now()->addDay()->toDateString()),
+                    'this_week'  => $q->whereBetween('booking_date', [now()->startOfWeek(), now()->endOfWeek()]),
+                    'this_month' => $q->whereBetween('booking_date', [now()->startOfMonth(), now()->endOfMonth()]),
+                    'upcoming'   => $q->where('booking_date', '>=', now()->toDateString()),
+                    default      => null,
+                };
+            })
             ->orderByDesc('booking_date')
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         return view('livewire.bookings.booking-index', compact('bookings'));
     }

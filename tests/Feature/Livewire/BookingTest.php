@@ -374,4 +374,37 @@ class BookingTest extends TestCase
             'total'      => 450000, // 650000 - 200000
         ]);
     }
+
+    public function test_booking_index_quick_date_filters(): void
+    {
+        $todayBooking = Booking::factory()->create([
+            'user_id'      => $this->user->id,
+            'client_id'    => $this->client->id,
+            'booking_date' => now()->setTime(10, 0),
+        ]);
+
+        $futureBooking = Booking::factory()->create([
+            'user_id'      => $this->user->id,
+            'client_id'    => $this->client->id,
+            'booking_date' => now()->addMonths(2)->setTime(14, 0),
+        ]);
+
+        $this->actingAs($this->user);
+
+        Livewire::test(BookingIndex::class)
+            ->call('setQuickDate', 'today')
+            ->assertSet('quickDateFilter', 'today')
+            ->assertSee($todayBooking->booking_date->format('d M Y'))
+            ->assertDontSee($futureBooking->booking_date->format('d M Y'));
+    }
+
+    public function test_booking_index_load_more_increases_per_page(): void
+    {
+        $this->actingAs($this->user);
+
+        Livewire::test(BookingIndex::class)
+            ->assertSet('perPage', 15)
+            ->call('loadMore')
+            ->assertSet('perPage', 30);
+    }
 }
