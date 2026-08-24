@@ -64,6 +64,9 @@
     {{-- PWA Install Prompt Banner --}}
     <x-pwa-install-banner />
 
+    {{-- Global In-App Invoice Preview Modal --}}
+    <x-invoice-preview-modal />
+
     {{-- Offline Toast Indicator --}}
     <div x-data="{ isOnline: navigator.onLine }"
          @online.window="isOnline = true"

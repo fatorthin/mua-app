@@ -58,18 +58,33 @@ class InvoiceController extends Controller
         return $pdf->stream($invoice->invoice_number . '.pdf');
     }
 
-    public function previewJpg(Invoice $invoice): Response|RedirectResponse
+    public function download(Invoice $invoice): Response
     {
         abort_unless(
             $invoice->booking->user_id === auth()->id() || auth()->user()->isAdmin(),
             403
         );
 
-        $signedUrl = URL::temporarySignedRoute('invoices.public-jpg', now()->addMinutes(10), [
-            'invoice' => $invoice,
-        ]);
+        $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
 
-        return redirect()->away($signedUrl);
+        $logoPath = $this->getLogoBase64($invoice);
+        $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
+
+        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+            ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
+            ->setPaper('A4');
+
+        return $pdf->download($invoice->invoice_number . '.pdf');
+    }
+
+    public function previewJpg(Invoice $invoice): Response
+    {
+        abort_unless(
+            $invoice->booking->user_id === auth()->id() || auth()->user()->isAdmin(),
+            403
+        );
+
+        return $this->jpgResponse($invoice);
     }
 
     public function publicPdf(Request $request, Invoice $invoice): Response

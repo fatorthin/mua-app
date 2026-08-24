@@ -127,8 +127,14 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex justify-end items-center gap-2.5">
-                                    <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank"
-                                        class="text-xs font-medium text-pink-600 hover:text-pink-700">PDF
+                                    <button type="button"
+                                        @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice) }}', downloadUrl: '{{ route('invoices.download', $invoice) }}' })"
+                                        class="text-xs font-medium text-pink-600 hover:text-pink-700 hover:underline">
+                                        Lihat
+                                    </button>
+                                    <a href="{{ route('invoices.download', $invoice) }}" download
+                                        class="text-xs font-medium text-gray-500 hover:text-gray-700" title="Unduh PDF">
+                                        PDF
                                     </a>
                                     <button wire:click="resendInvoice({{ $invoice->id }})"
                                         wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?"
@@ -186,21 +192,35 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-gray-50">
-                        <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank"
-                            class="text-xs font-medium text-pink-600 hover:text-pink-700">PDF</a>
+                    <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-gray-50">
+                        <button type="button"
+                            @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice) }}', downloadUrl: '{{ route('invoices.download', $invoice) }}' })"
+                            class="inline-flex items-center gap-1 text-xs font-medium text-pink-700 bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-lg border border-pink-200 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Lihat
+                        </button>
+                        <a href="{{ route('invoices.download', $invoice) }}" download
+                            class="inline-flex items-center gap-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            PDF
+                        </a>
                         <button wire:click="resendInvoice({{ $invoice->id }})"
                             wire:confirm="Kirim ulang invoice ini ke WhatsApp klien?"
-                            class="text-xs font-medium text-blue-600 hover:text-blue-700">Kirim WA</button>
+                            class="text-xs font-medium text-blue-600 hover:text-blue-700 px-2 py-1">Kirim WA</button>
                         @if ($invoice->status === 'unpaid')
                             <button wire:click="openPaymentModal({{ $invoice->id }})"
-                                class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded border border-emerald-200">
+                                class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
                                 Pelunasan
                             </button>
                         @else
                             <button wire:click="setUnpaid({{ $invoice->id }})"
                                 wire:confirm="Ubah status invoice ini menjadi belum dibayar?"
-                                class="text-xs font-medium text-orange-600 hover:text-orange-700">Batalkan</button>
+                                class="text-xs font-medium text-orange-600 hover:text-orange-700 px-2 py-1">Batalkan</button>
                         @endif
                     </div>
                 </div>

@@ -163,6 +163,50 @@ class RoutesTest extends TestCase
             ->assertOk();
     }
 
+    public function test_invoice_download_returns_200_for_owner(): void
+    {
+        $booking = Booking::factory()->create(['user_id' => $this->user->id]);
+        $invoice = Invoice::factory()->create(['booking_id' => $booking->id]);
+
+        $this->actingAs($this->user)
+            ->get("/invoices/{$invoice->id}/download")
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_invoice_download_returns_403_for_other_user(): void
+    {
+        $other   = User::factory()->create();
+        $booking = Booking::factory()->create(['user_id' => $other->id]);
+        $invoice = Invoice::factory()->create(['booking_id' => $booking->id]);
+
+        $this->actingAs($this->user)
+            ->get("/invoices/{$invoice->id}/download")
+            ->assertForbidden();
+    }
+
+    public function test_invoice_preview_returns_200_for_owner(): void
+    {
+        $booking = Booking::factory()->create(['user_id' => $this->user->id]);
+        $invoice = Invoice::factory()->create(['booking_id' => $booking->id]);
+
+        $this->actingAs($this->user)
+            ->get("/invoices/{$invoice->id}/preview")
+            ->assertOk()
+            ->assertHeader('content-type', 'image/jpeg');
+    }
+
+    public function test_invoice_preview_returns_403_for_other_user(): void
+    {
+        $other   = User::factory()->create();
+        $booking = Booking::factory()->create(['user_id' => $other->id]);
+        $invoice = Invoice::factory()->create(['booking_id' => $booking->id]);
+
+        $this->actingAs($this->user)
+            ->get("/invoices/{$invoice->id}/preview")
+            ->assertForbidden();
+    }
+
     // ── Welcome page ────────────────────────────────────────────────────────
 
     public function test_welcome_page_loads(): void
