@@ -37,6 +37,40 @@ run_in_app_container() {
   docker compose exec -T app sh -lc "$cmd"
 }
 
+run_in_app_container_as_root() {
+  local cmd="$1"
+  docker compose exec -T -u root app sh -lc "$cmd"
+}
+
+resolve_host_npm() {
+  if command -v npm >/dev/null 2>&1; then
+    command -v npm
+    return 0
+  fi
+
+  local nvm_dir
+  nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+
+  if [[ -s "$nvm_dir/nvm.sh" ]]; then
+    # shellcheck disable=SC1090
+    . "$nvm_dir/nvm.sh" >/dev/null 2>&1 || true
+  fi
+
+  if command -v npm >/dev/null 2>&1; then
+    command -v npm
+    return 0
+  fi
+
+  local npm_candidates
+  npm_candidates="$(ls -1d "$nvm_dir"/versions/node/*/bin/npm 2>/dev/null || true)"
+  if [[ -n "$npm_candidates" ]]; then
+    echo "$npm_candidates" | sort -V | tail -n 1
+    return 0
+  fi
+
+  return 1
+}
+
 prepare_log_file() {
   local preferred_dir
 
@@ -58,6 +92,15 @@ prepare_log_file() {
 }
 
 prepare_log_file
+
+on_error() {
+  local exit_code="$1"
+  local line_no="$2"
+  local cmd="$3"
+  log "ERROR: Deploy failed (exit $exit_code) at line $line_no while running: $cmd"
+}
+
+trap 'on_error "$?" "$LINENO" "$BASH_COMMAND"' ERR
 
 PAYLOAD_FILE="$(mktemp)"
 cleanup() {
@@ -122,6 +165,9 @@ git pull --ff-only origin "$BRANCH"
 if [[ "$use_docker" == "true" ]]; then
   log "Running deploy commands inside docker service 'app'"
 
+  # Ensure app user can update dependencies and caches on bind-mounted project files.
+  run_in_app_container_as_root "chown -R www-data:www-data /var/www/html/vendor /var/www/html/storage /var/www/html/bootstrap/cache || true"
+
   run_in_app_container "composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev"
   run_in_app_container "php artisan migrate --force"
   run_in_app_container "php artisan optimize:clear"
@@ -139,6 +185,8 @@ else
 fi
 
 if [[ -f package.json ]]; then
+  host_npm="$(resolve_host_npm || true)"
+
   if [[ "$use_docker" == "true" ]]; then
     if run_in_app_container "command -v npm >/dev/null 2>&1"; then
       log "Running frontend build inside docker service 'app'"
@@ -150,29 +198,32 @@ if [[ -f package.json ]]; then
       fi
 
       run_in_app_container "npm run build"
-    elif command -v npm >/dev/null 2>&1; then
-      log "npm not found in container; running frontend build on host"
+    elif [[ -n "$host_npm" ]]; then
+      log "npm not found in container; running frontend build on host via $host_npm"
+
+      # Ensure host user owns node_modules & public/build if docker previously touched them
+      run_in_app_container_as_root "chown -R $(id -u):$(id -g) /var/www/html/node_modules /var/www/html/public/build 2>/dev/null || true"
 
       if [[ -f package-lock.json ]]; then
-        npm ci --no-audit --no-fund
+        "$host_npm" ci --no-audit --no-fund
       else
-        npm install --no-audit --no-fund
+        "$host_npm" install --no-audit --no-fund
       fi
 
-      npm run build
+      "$host_npm" run build
     else
       log "Skipping frontend build: npm not found in both container and host"
     fi
-  elif command -v npm >/dev/null 2>&1; then
-    log "Running frontend build on host"
+  elif [[ -n "$host_npm" ]]; then
+    log "Running frontend build on host via $host_npm"
 
     if [[ -f package-lock.json ]]; then
-      npm ci --no-audit --no-fund
+      "$host_npm" ci --no-audit --no-fund
     else
-      npm install --no-audit --no-fund
+      "$host_npm" install --no-audit --no-fund
     fi
 
-    npm run build
+    "$host_npm" run build
   else
     log "Skipping frontend build: npm not found on host"
   fi
