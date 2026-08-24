@@ -135,11 +135,44 @@ class WhatsAppService
             ];
         }
 
+        $qrLink = $response->json('results.qr_link');
+        $qrDuration = $response->json('results.qr_duration');
+
+        if (!empty($qrLink) && is_string($qrLink) && !str_starts_with($qrLink, 'data:image')) {
+            try {
+                $parsedPath = parse_url($qrLink, PHP_URL_PATH) ?: $qrLink;
+                $parsedQuery = parse_url($qrLink, PHP_URL_QUERY);
+                $relativeOrFullPath = $parsedPath . ($parsedQuery ? '?' . $parsedQuery : '');
+
+                $fetchUrl = rtrim($url, '/') . '/' . ltrim($relativeOrFullPath, '/');
+
+                $imgResponse = $this->authorizedRequest($auth)
+                    ->withHeaders($this->deviceHeaders($deviceId))
+                    ->get($fetchUrl);
+
+                if (!$imgResponse->successful() && (str_starts_with($qrLink, 'http://') || str_starts_with($qrLink, 'https://'))) {
+                    $imgResponse = $this->authorizedRequest($auth)
+                        ->withHeaders($this->deviceHeaders($deviceId))
+                        ->get($qrLink);
+                }
+
+                if ($imgResponse->successful() && !empty($imgResponse->body())) {
+                    $mimeType = $imgResponse->header('Content-Type') ?: 'image/png';
+                    if (str_contains($mimeType, ';')) {
+                        $mimeType = trim(explode(';', $mimeType)[0]);
+                    }
+                    $qrLink = 'data:' . $mimeType . ';base64,' . base64_encode($imgResponse->body());
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mengunduh gambar QR login dari WhatsApp gateway: ' . $e->getMessage());
+            }
+        }
+
         return [
             'ok' => true,
             'message' => 'QR login berhasil dibuat.',
-            'qr_link' => $response->json('results.qr_link'),
-            'qr_duration' => $response->json('results.qr_duration'),
+            'qr_link' => $qrLink,
+            'qr_duration' => $qrDuration,
         ];
     }
 

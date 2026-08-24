@@ -357,8 +357,15 @@ new class extends Component {
                     </svg>
                     Buat Device ID Baru
                 </x-secondary-button>
-                <x-secondary-button type="button" wire:click="connectWhatsappQr">
-                    Buka QR Login
+                <x-secondary-button type="button" wire:click="connectWhatsappQr" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="connectWhatsappQr">Buka QR Login</span>
+                    <span wire:loading wire:target="connectWhatsappQr" class="inline-flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-pink-600" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        Memuat QR...
+                    </span>
                 </x-secondary-button>
                 <x-secondary-button type="button" wire:click="refreshWhatsappStatus">
                     Refresh Status
