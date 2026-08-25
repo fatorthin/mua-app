@@ -613,7 +613,7 @@ class WhatsAppService
 
         $contacts = [];
         if (! empty($owner?->phone)) {
-            $contacts[] = 'WA: ' . $owner->phone;
+            $contacts[] = 'WA: +62' . $owner->phone;
         }
         if (! empty($owner?->instagram)) {
             $contacts[] = 'IG: @' . ltrim((string) $owner->instagram, '@');
