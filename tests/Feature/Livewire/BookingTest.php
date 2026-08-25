@@ -170,13 +170,14 @@ class BookingTest extends TestCase
             ->set('booking_time', '14:00')
             ->call('save');
 
-        $booking = Booking::where('user_id', $this->user->id)->first();
+        $booking = Booking::with('invoice')->where('user_id', $this->user->id)->first();
         $this->assertNotNull($booking);
         $this->assertDatabaseHas('invoices', [
             'booking_id' => $booking->id,
             'status'     => 'unpaid',
             'total'      => 500000,
         ]);
+        $this->assertEquals(now()->addDays(4)->toDateString(), $booking->invoice->due_date->toDateString());
     }
 
     public function test_booking_create_with_new_client(): void
@@ -343,6 +344,7 @@ class BookingTest extends TestCase
             'subtotal' => 900000,
             'total'    => 600000, // 900000 - 300000
         ]);
+        $this->assertEquals(now()->addDays(3)->toDateString(), $invoice->fresh()->due_date->toDateString());
     }
 
     public function test_booking_supports_transport_fee_and_updates_invoice(): void

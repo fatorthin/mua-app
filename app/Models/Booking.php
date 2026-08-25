@@ -57,6 +57,15 @@ class Booking extends Model
         return $this->hasOne(Invoice::class);
     }
 
+    public function calculateInvoiceDueDate(): string
+    {
+        if (! $this->booking_date) {
+            return now()->toDateString();
+        }
+
+        return $this->booking_date->copy()->subDay()->toDateString();
+    }
+
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');

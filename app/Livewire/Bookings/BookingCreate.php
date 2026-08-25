@@ -220,7 +220,7 @@ class BookingCreate extends Component
             'tax'            => $transportFee,
             'total'          => $invoiceTotal,
             'status'         => 'unpaid',
-            'due_date'       => now()->addDays(7)->toDateString(),
+            'due_date'       => $booking->calculateInvoiceDueDate(),
             'notes'          => $dpAmount > 0 ? 'DP terbayar: Rp ' . number_format($dpAmount, 0, ',', '.') : null,
         ]);
 

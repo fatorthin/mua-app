@@ -35,6 +35,15 @@ class Invoice extends Model
         return $this->belongsTo(Booking::class);
     }
 
+    public static function calculateDueDate(?\DateTimeInterface $bookingDate): string
+    {
+        if (! $bookingDate) {
+            return now()->toDateString();
+        }
+
+        return \Carbon\Carbon::parse($bookingDate)->subDay()->toDateString();
+    }
+
     public function getFormattedTotalAttribute(): string
     {
         return 'Rp ' . number_format($this->total, 0, ',', '.');

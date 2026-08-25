@@ -92,7 +92,7 @@ class DemoSeeder extends Seeder
                     'tax'            => 0,
                     'total'          => $service->price,
                     'status'         => 'unpaid',
-                    'due_date'       => $bookingDate->toDateString(),
+                    'due_date'       => $bookingDate->copy()->subDay()->toDateString(),
                 ]);
             }
         }

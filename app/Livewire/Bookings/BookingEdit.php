@@ -215,6 +215,7 @@ class BookingEdit extends Component
                 'subtotal' => $totalPrice,
                 'tax'      => $transportFee,
                 'total'    => $invoiceTotal,
+                'due_date' => $this->booking->calculateInvoiceDueDate(),
                 'notes'    => $dpAmount > 0 ? 'DP terbayar: Rp ' . number_format($dpAmount, 0, ',', '.') : null,
             ]);
         }
