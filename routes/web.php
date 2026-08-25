@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Invoices
     Route::get('/invoices', fn() => view('invoices.index'))->name('invoices.index');
     Route::get('/invoices/{invoice}/preview', [InvoiceController::class, 'previewHtml'])->name('invoices.preview');
-    Route::get('/invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('invoices.download');
+    Route::get('/invoices/{invoice}/download/{filename?}', [InvoiceController::class, 'download'])->name('invoices.download');
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
     // Admin

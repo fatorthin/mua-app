@@ -58,7 +58,7 @@ class InvoiceController extends Controller
         return $pdf->stream($invoice->invoice_number . '.pdf');
     }
 
-    public function download(Invoice $invoice): Response
+    public function download(Invoice $invoice, ?string $filename = null): Response
     {
         abort_unless(
             $invoice->booking->user_id === auth()->id() || auth()->user()->isAdmin(),

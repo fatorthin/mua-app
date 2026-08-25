@@ -43,22 +43,32 @@
             vertical-align: top;
         }
 
-        .invoice-section {
-            width: 50%;
-            text-align: right;
-            vertical-align: top;
+        .brand-logo {
+            max-height: 55px;
+            max-width: 220px;
+            margin-bottom: 6px;
+            display: block;
         }
 
         .brand-name {
-            font-size: 20px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 8px;
+            color: #222;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .brand-name.no-logo {
+            font-size: 19px;
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 6px;
         }
 
         .brand-details {
-            font-size: 13px;
-            color: #333;
-            line-height: 1.6;
+            font-size: 12px;
+            color: #444;
+            line-height: 1.5;
         }
 
         .invoice-title {
@@ -208,9 +218,11 @@
                 <tr>
                     <td class="brand-section">
                         @if (!empty($logoPath))
-                            <img src="{{ $logoPath }}" style="max-height: 45px; margin-bottom: 12px;">
+                            <img src="{{ $logoPath }}" class="brand-logo" alt="Logo">
+                            <div class="brand-name">{{ $invoice->booking->user->studio_name ?? 'MUA STUDIO' }}</div>
+                        @else
+                            <div class="brand-name no-logo">{{ $invoice->booking->user->studio_name ?? 'MUA STUDIO' }}</div>
                         @endif
-                        <div class="brand-name">{{ $invoice->booking->user->studio_name ?? 'MUA STUDIO' }}</div>
                         <div class="brand-details">
                             @if (!empty($invoice->booking->user->instagram))
                                 <span>IG : {{ $invoice->booking->user->instagram }}</span> &nbsp;&bull;&nbsp;

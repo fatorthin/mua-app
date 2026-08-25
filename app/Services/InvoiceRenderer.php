@@ -71,9 +71,13 @@ class InvoiceRenderer
         // Header brand (kiri)
         $logoPath = $invoice->booking->user->invoice_logo_path ?? null;
         $absLogo  = $logoPath ? storage_path('app/public/' . ltrim($logoPath, '/')) : null;
-        $this->drawLogo($image, $absLogo, 60, 60, 160, 60);
+        if ($absLogo && is_file($absLogo)) {
+            $this->drawLogo($image, $absLogo, 60, 60, 200, 60);
+            imagestring($image, 4, 60, 130, (string) ($invoice->booking->user->studio_name ?? 'MUA STUDIO'), $bold);
+        } else {
+            imagestring($image, 5, 60, 60, (string) ($invoice->booking->user->studio_name ?? 'MUA STUDIO'), $bold);
+        }
 
-        imagestring($image, 5, 60, 130, (string) ($invoice->booking->user->studio_name ?? 'MUA STUDIO'), $bold);
         $phone = (string) ($invoice->booking->user->phone ?? '');
         if ($phone !== '') {
             imagestring($image, 3, 60, 158, 'WA : ' . $phone, $muted);

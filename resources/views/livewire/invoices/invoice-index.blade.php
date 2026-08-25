@@ -10,6 +10,17 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
     {{-- Filter & Summary Bar --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -128,11 +139,11 @@
                             <td class="px-4 py-3 text-right">
                                 <div class="flex justify-end items-center gap-2.5">
                                     <button type="button"
-                                        @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', $invoice, false) }}' })"
+                                        @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', ['invoice' => $invoice, 'filename' => 'Invoice-' . $invoice->invoice_number . '.pdf'], false) }}' })"
                                         class="text-xs font-medium text-pink-600 hover:text-pink-700 hover:underline">
                                         Lihat
                                     </button>
-                                    <a href="{{ route('invoices.download', $invoice, false) }}" download target="_blank"
+                                    <a href="{{ route('invoices.download', ['invoice' => $invoice, 'filename' => 'Invoice-' . $invoice->invoice_number . '.pdf'], false) }}" download="Invoice-{{ $invoice->invoice_number }}.pdf"
                                         class="text-xs font-medium text-gray-500 hover:text-gray-700" title="Unduh PDF">
                                         PDF
                                     </a>
@@ -194,7 +205,7 @@
 
                     <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-gray-50">
                         <button type="button"
-                            @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', $invoice, false) }}' })"
+                            @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', ['invoice' => $invoice, 'filename' => 'Invoice-' . $invoice->invoice_number . '.pdf'], false) }}' })"
                             class="inline-flex items-center gap-1 text-xs font-medium text-pink-700 bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-lg border border-pink-200 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -202,7 +213,7 @@
                             </svg>
                             Lihat
                         </button>
-                        <a href="{{ route('invoices.download', $invoice, false) }}" download target="_blank"
+                        <a href="{{ route('invoices.download', ['invoice' => $invoice, 'filename' => 'Invoice-' . $invoice->invoice_number . '.pdf'], false) }}" download="Invoice-{{ $invoice->invoice_number }}.pdf"
                             class="inline-flex items-center gap-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

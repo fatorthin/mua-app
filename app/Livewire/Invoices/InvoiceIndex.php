@@ -123,15 +123,43 @@ class InvoiceIndex extends Component
         session()->flash('success', 'Status invoice #' . $invoice->invoice_number . ' diubah menjadi Belum Dibayar.');
     }
 
-    public function resendInvoice(int $id): void
+    public function resendInvoice(int $id, WhatsAppService $whatsAppService): void
     {
-        $invoice = Invoice::with(['booking.client'])
+        $invoice = Invoice::with(['booking.client', 'booking.user', 'booking.service', 'booking.items.service'])
             ->whereHas('booking', fn($q) => $q->where('user_id', Auth::id()))
             ->findOrFail($id);
 
-        SendBookingInvoiceJob::dispatch($invoice->booking, $invoice);
+        $clientPhone = $invoice->booking->client?->phone;
+        if (!$clientPhone) {
+            session()->flash('error', 'Gagal: Nomor WhatsApp klien tidak ditemukan.');
+            return;
+        }
 
-        session()->flash('success', 'Invoice berhasil dijadwalkan ulang untuk dikirim ke WhatsApp klien.');
+        $user = Auth::user();
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $whatsAppService->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            session()->flash('error', 'WhatsApp Gateway belum dikonfigurasi di sistem.');
+            return;
+        }
+
+        if ($deviceId === '') {
+            session()->flash('error', 'Perangkat WhatsApp belum terhubung. Silakan buka menu Profil dan lakukan Scan QR WhatsApp terlebih dahulu.');
+            return;
+        }
+
+        try {
+            $sent = $whatsAppService->sendInvoiceCreated($invoice->booking, $invoice);
+
+            if ($sent) {
+                session()->flash('success', 'Invoice #' . $invoice->invoice_number . ' berhasil dikirim ke WhatsApp ' . ($invoice->booking->client->name ?? 'klien') . '!');
+            } else {
+                session()->flash('error', 'Gagal mengirim pesan via WhatsApp Gateway. Pastikan status WhatsApp Anda di menu Profil sudah Connected / Scan QR.');
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error resending invoice via WhatsApp: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan saat mengirim via WhatsApp Gateway: ' . $e->getMessage());
+        }
     }
 
     public function exportCsv(): StreamedResponse

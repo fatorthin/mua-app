@@ -412,12 +412,12 @@ class WhatsAppService
         ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($booking->user);
 
         if ($url === '' || $auth === '') {
+            Log::warning('WhatsApp gateway URL or Auth not configured.');
             return false;
         }
 
-        [$username, $password] = $this->parseBasicAuth($auth);
-        if ($username === '' || $password === '') {
-            Log::warning('WhatsApp gateway auth format invalid. Expected user:password.');
+        if ($deviceId === '') {
+            Log::warning('WhatsApp device ID is empty for user: ' . ($booking->user_id ?? 'null'));
             return false;
         }
 
@@ -442,7 +442,7 @@ class WhatsAppService
 
         $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
 
-        $response = Http::withBasicAuth($username, $password)
+        $response = $this->authorizedRequest($auth)
             ->withHeaders($this->deviceHeaders($deviceId))
             ->attach('file', $fileBinary, $fileName)
             ->acceptJson()
@@ -465,7 +465,7 @@ class WhatsAppService
         return true;
     }
 
-    private function gatewayConfigFor(?User $user): array
+    public function gatewayConfigFor(?User $user): array
     {
         return [
             'url' => rtrim((string) config('services.whatsapp_gateway.url'), '/'),
@@ -474,7 +474,7 @@ class WhatsAppService
         ];
     }
 
-    private function deviceHeaders(string $deviceId): array
+    public function deviceHeaders(string $deviceId): array
     {
         return $deviceId !== '' ? ['X-Device-Id' => $deviceId] : [];
     }
