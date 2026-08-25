@@ -7,7 +7,8 @@
     hasError: false,
     openModal(data) {
         this.invoiceNumber = data.number || 'Invoice';
-        this.previewUrl = data.previewUrl || '';
+        const rawUrl = data.previewUrl || '';
+        this.previewUrl = rawUrl ? (rawUrl + (rawUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime()) : '';
         this.downloadUrl = data.downloadUrl || '';
         this.loading = true;
         this.hasError = false;
@@ -15,6 +16,12 @@
 
         // Push state to browser history so pressing Android/mobile Back button closes the modal without exiting the app
         window.history.pushState({ modal: 'invoice-preview' }, '');
+    },
+    retryLoad() {
+        this.hasError = false;
+        this.loading = true;
+        const base = this.previewUrl.split('?')[0];
+        this.previewUrl = base + '?t=' + new Date().getTime();
     },
     closeModal(fromPopState = false) {
         if (!this.open) return;
@@ -119,14 +126,24 @@ aria-modal="true">
                     </div>
                     <p class="text-sm text-gray-800 font-semibold mb-1">Pratinjau gambar belum tersedia</p>
                     <p class="text-xs text-gray-500 mb-4">Anda tetap dapat mengunduh dokumen file PDF secara langsung.</p>
-                    <a :href="downloadUrl"
-                       download
-                       class="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Unduh File PDF
-                    </a>
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button type="button"
+                                x-on:click="retryLoad()"
+                                class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Coba Muat Ulang
+                        </button>
+                        <a :href="downloadUrl"
+                           download
+                           class="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Unduh File PDF
+                        </a>
+                    </div>
                 </div>
             </div>
 
