@@ -432,17 +432,29 @@ class WhatsAppService
         $caption = $this->buildInvoiceCaption($booking, $invoice);
 
         $invoice->loadMissing(['booking.client', 'booking.service', 'booking.user', 'booking.items.service']);
-        $logoPath = $this->getLogoBase64($invoice);
+        $logoPath = extension_loaded('gd') ? $this->getLogoBase64($invoice) : null;
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'chroot' => [base_path(), storage_path(), public_path()],
-        ])
-            ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
-            ->setPaper('A4')
-            ->output();
+        try {
+            $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'chroot' => [base_path(), storage_path(), public_path()],
+            ])
+                ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
+                ->setPaper('A4')
+                ->output();
+        } catch (\Throwable $e) {
+            Log::warning('Failed generating invoice PDF with logo, retrying without logo: ' . $e->getMessage());
+            $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'chroot' => [base_path(), storage_path(), public_path()],
+            ])
+                ->loadView('invoices.pdf', ['invoice' => $invoice, 'logoPath' => null, 'invoiceFooterNotes' => $invoiceFooterNotes])
+                ->setPaper('A4')
+                ->output();
+        }
 
         $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
 

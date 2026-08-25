@@ -168,6 +168,8 @@ if [[ "$use_docker" == "true" ]]; then
   # Ensure app user can update dependencies and caches on bind-mounted project files.
   run_in_app_container_as_root "chown -R www-data:www-data /var/www/html/vendor /var/www/html/storage /var/www/html/bootstrap/cache || true"
 
+  bash "$APP_DIR/scripts/ensure-gd-extension.sh" || true
+
   run_in_app_container "composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev"
   run_in_app_container "php artisan migrate --force"
   run_in_app_container "php artisan optimize:clear"
