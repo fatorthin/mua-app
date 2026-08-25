@@ -74,7 +74,17 @@ class InvoiceController extends Controller
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 
-        return $pdf->download($invoice->invoice_number . '.pdf');
+        $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
+        $output = $pdf->output();
+
+        return response($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => strlen($output),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     public function previewJpg(Invoice $invoice): Response
@@ -100,7 +110,17 @@ class InvoiceController extends Controller
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 
-        return $pdf->download($invoice->invoice_number . '.pdf');
+        $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
+        $output = $pdf->output();
+
+        return response($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => strlen($output),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     public function publicJpg(Request $request, Invoice $invoice): Response
@@ -118,8 +138,11 @@ class InvoiceController extends Controller
         if ($convertedJpg !== null) {
             return response($convertedJpg, 200, [
                 'Content-Type' => 'image/jpeg',
+                'Content-Length' => strlen($convertedJpg),
                 'Content-Disposition' => 'inline; filename="' . $invoice->invoice_number . '.jpg"',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
             ]);
         }
 

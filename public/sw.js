@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mua-manager-v3';
+const CACHE_NAME = 'mua-manager-v5';
 const STATIC_ASSETS = [
     '/manifest.json',
     '/offline.html',
@@ -28,11 +28,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Network-first strategy for API/auth requests
-    if (event.request.url.includes('/api/') || event.request.url.includes('/login') || event.request.url.includes('/logout')) {
-        return;
-    }
-
     // Only handle same-origin and GET requests
     if (event.request.method !== 'GET') {
         return;
@@ -43,14 +38,30 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Bypass Service Worker completely for dynamic, auth, livewire, invoices, and binary download routes
+    if (
+        url.pathname.startsWith('/invoices/') ||
+        url.pathname.startsWith('/livewire/') ||
+        url.pathname.startsWith('/api/') ||
+        url.pathname.startsWith('/login') ||
+        url.pathname.startsWith('/logout') ||
+        url.pathname.startsWith('/register') ||
+        url.pathname.startsWith('/password')
+    ) {
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                if (response && response.status === 200) {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
+                if (response && response.status === 200 && response.type === 'basic') {
+                    const cacheControl = response.headers.get('cache-control') || '';
+                    if (!cacheControl.includes('no-store')) {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }
                 }
                 return response;
             })
