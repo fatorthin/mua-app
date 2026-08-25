@@ -39,6 +39,15 @@ class InvoiceController extends Controller
         return is_file($absolute) ? $absolute : null;
     }
 
+    private function getLogoForPdf(Invoice $invoice): ?string
+    {
+        if (! extension_loaded('gd')) {
+            return null;
+        }
+
+        return $this->getLogoBase64($invoice);
+    }
+
     public function pdf(Invoice $invoice): Response
     {
         abort_unless(
@@ -48,14 +57,22 @@ class InvoiceController extends Controller
 
         $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
 
-        $logoPath = $this->getLogoBase64($invoice);
+        $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
         $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 
-        return $pdf->stream($invoice->invoice_number . '.pdf');
+        $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
+        $output = $pdf->output();
+
+        return response($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => strlen($output),
+            'Cache-Control' => 'private, max-age=3600, must-revalidate',
+        ]);
     }
 
     public function download(Invoice $invoice, ?string $filename = null): Response
@@ -67,7 +84,7 @@ class InvoiceController extends Controller
 
         $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
 
-        $logoPath = $this->getLogoBase64($invoice);
+        $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
         $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
@@ -134,7 +151,7 @@ class InvoiceController extends Controller
 
         $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
 
-        $logoPath = $this->getLogoBase64($invoice);
+        $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
         $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])

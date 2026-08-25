@@ -488,6 +488,10 @@ class WhatsAppService
 
     private function getLogoBase64(Invoice $invoice): ?string
     {
+        if (! extension_loaded('gd')) {
+            return null;
+        }
+
         $path = $invoice->booking->user->invoice_logo_path ?? null;
         if (! $path) {
             return null;
