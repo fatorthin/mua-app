@@ -58,33 +58,18 @@ class InvoiceController extends Controller
         return $pdf->stream($invoice->invoice_number . '.pdf');
     }
 
-    public function download(Invoice $invoice): Response
+    public function download(Invoice $invoice): RedirectResponse
     {
         abort_unless(
             $invoice->booking->user_id === auth()->id() || auth()->user()->isAdmin(),
             403
         );
 
-        $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
-
-        $logoPath = $this->getLogoBase64($invoice);
-        $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
-
-        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
-            ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
-            ->setPaper('A4');
-
-        $fileName = 'Invoice-' . $invoice->invoice_number . '.pdf';
-        $output = $pdf->output();
-
-        return response($output, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-            'Content-Length' => strlen($output),
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+        $signedUrl = URL::temporarySignedRoute('invoices.public-pdf', now()->addHours(2), [
+            'invoice' => $invoice,
         ]);
+
+        return redirect()->away($signedUrl);
     }
 
     public function previewHtml(Invoice $invoice): Response
@@ -99,7 +84,25 @@ class InvoiceController extends Controller
         $logoPath = $this->getLogoBase64($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        return response()->view('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'));
+        return response()
+            ->view('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
+            ->header('Content-Type', 'text/html; charset=UTF-8')
+            ->header('Cache-Control', 'private, max-age=60');
+    }
+
+    public function publicPreviewHtml(Request $request, Invoice $invoice): Response
+    {
+        abort_unless($request->hasValidSignature(), 403);
+
+        $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
+
+        $logoPath = $this->getLogoBase64($invoice);
+        $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
+
+        return response()
+            ->view('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
+            ->header('Content-Type', 'text/html; charset=UTF-8')
+            ->header('Cache-Control', 'private, max-age=300');
     }
 
     public function previewJpg(Invoice $invoice): Response
@@ -132,9 +135,7 @@ class InvoiceController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             'Content-Length' => strlen($output),
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+            'Cache-Control' => 'private, max-age=3600, must-revalidate',
         ]);
     }
 

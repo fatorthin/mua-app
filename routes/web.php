@@ -12,6 +12,9 @@ Route::post('/webhooks/github/deploy', DeployWebhookController::class)
 Route::get('/invoices/{invoice}/public-pdf', [InvoiceController::class, 'publicPdf'])
     ->middleware('signed')
     ->name('invoices.public-pdf');
+Route::get('/invoices/{invoice}/public-preview', [InvoiceController::class, 'publicPreviewHtml'])
+    ->middleware('signed')
+    ->name('invoices.public-preview');
 Route::get('/invoices/{invoice}/public-jpg', [InvoiceController::class, 'publicJpg'])
     ->middleware('signed')
     ->name('invoices.public-jpg');

@@ -126,13 +126,17 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
+                                @php
+                                    $previewUrl = URL::temporarySignedRoute('invoices.public-preview', now()->addHours(2), ['invoice' => $invoice]);
+                                    $downloadUrl = URL::temporarySignedRoute('invoices.public-pdf', now()->addHours(2), ['invoice' => $invoice]);
+                                @endphp
                                 <div class="flex justify-end items-center gap-2.5">
                                     <button type="button"
-                                        @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', $invoice, false) }}' })"
+                                        @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ $previewUrl }}', downloadUrl: '{{ $downloadUrl }}' })"
                                         class="text-xs font-medium text-pink-600 hover:text-pink-700 hover:underline">
                                         Lihat
                                     </button>
-                                    <a href="{{ route('invoices.download', $invoice, false) }}" download target="_blank"
+                                    <a href="{{ $downloadUrl }}" download target="_blank"
                                         class="text-xs font-medium text-gray-500 hover:text-gray-700" title="Unduh PDF">
                                         PDF
                                     </a>
@@ -164,6 +168,10 @@
         {{-- Mobile Card View --}}
         <div class="md:hidden divide-y divide-gray-100">
             @forelse($invoices as $invoice)
+                @php
+                    $mobilePreviewUrl = URL::temporarySignedRoute('invoices.public-preview', now()->addHours(2), ['invoice' => $invoice]);
+                    $mobileDownloadUrl = URL::temporarySignedRoute('invoices.public-pdf', now()->addHours(2), ['invoice' => $invoice]);
+                @endphp
                 <div class="p-4 space-y-3">
                     <div class="flex justify-between items-start">
                         <div>
@@ -194,7 +202,7 @@
 
                     <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-gray-50">
                         <button type="button"
-                            @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ route('invoices.preview', $invoice, false) }}', downloadUrl: '{{ route('invoices.download', $invoice, false) }}' })"
+                            @click="$dispatch('open-invoice-preview', { id: {{ $invoice->id }}, number: '{{ $invoice->invoice_number }}', previewUrl: '{{ $mobilePreviewUrl }}', downloadUrl: '{{ $mobileDownloadUrl }}' })"
                             class="inline-flex items-center gap-1 text-xs font-medium text-pink-700 bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-lg border border-pink-200 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -202,7 +210,7 @@
                             </svg>
                             Lihat
                         </button>
-                        <a href="{{ route('invoices.download', $invoice, false) }}" download target="_blank"
+                        <a href="{{ $mobileDownloadUrl }}" download target="_blank"
                             class="inline-flex items-center gap-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
