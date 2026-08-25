@@ -39,13 +39,20 @@
         }
 
         .brand-section {
-            width: 50%;
+            width: 55%;
             vertical-align: top;
+            text-align: left;
+        }
+
+        .invoice-section {
+            width: 45%;
+            vertical-align: top;
+            text-align: right;
         }
 
         .brand-logo {
             max-height: 55px;
-            max-width: 220px;
+            max-width: 200px;
             margin-bottom: 6px;
             display: block;
         }
@@ -59,39 +66,42 @@
         }
 
         .brand-name.no-logo {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: bold;
             color: #111;
             margin-bottom: 6px;
         }
 
         .brand-details {
-            font-size: 12px;
-            color: #444;
+            font-size: 11px;
+            color: #555;
             line-height: 1.5;
         }
 
         .invoice-title {
             font-size: 24px;
             font-weight: bold;
-            margin-bottom: 10px;
+            color: #222;
+            margin-bottom: 6px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .badge {
             display: inline-block;
             background-color: #d99c9c;
             color: #fff;
-            padding: 6px 14px;
-            border-radius: 6px;
+            padding: 5px 12px;
+            border-radius: 4px;
             font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 8px;
+            font-size: 13px;
+            margin-bottom: 6px;
         }
 
         .invoice-info {
-            font-size: 12px;
+            font-size: 11px;
             color: #555;
+            line-height: 1.5;
         }
 
         .separator {
@@ -214,7 +224,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td class="brand-section">
                         @if (!empty($logoPath))
@@ -225,13 +235,16 @@
                         @endif
                         <div class="brand-details">
                             @if (!empty($invoice->booking->user->instagram))
-                                <span>IG : {{ $invoice->booking->user->instagram }}</span> &nbsp;&bull;&nbsp;
+                                <span>IG : {{ $invoice->booking->user->instagram }}</span>
                             @endif
-                            @if (!empty($invoice->booking->user->tiktok))
-                                <span>TikTok : {{ $invoice->booking->user->tiktok }}</span> &nbsp;&bull;&nbsp;
+                            @if (!empty($invoice->booking->user->instagram) && !empty($invoice->booking->user->phone))
+                                &nbsp;&bull;&nbsp;
                             @endif
                             @if (!empty($invoice->booking->user->phone))
                                 <span>WA : {{ $invoice->booking->user->phone }}</span>
+                            @endif
+                            @if (!empty($invoice->booking->user->tiktok))
+                                <br><span>TikTok : {{ $invoice->booking->user->tiktok }}</span>
                             @endif
                         </div>
                     </td>
@@ -239,7 +252,7 @@
                         <div class="invoice-title">INVOICE</div>
                         <div class="badge">Rp {{ number_format((float) $invoice->total, 0, ',', '.') }}</div>
                         <div class="invoice-info">
-                            <div>{{ $invoice->invoice_number }}</div>
+                            <div>No: {{ $invoice->invoice_number }}</div>
                             <div>Terbit: {{ $invoice->created_at->format('d/m/Y') }}</div>
                         </div>
                     </td>

@@ -15,13 +15,24 @@ class InvoiceController extends Controller
     private function getLogoBase64(Invoice $invoice): ?string
     {
         $path = $this->resolveLogoPath($invoice);
-        if (! $path) {
+        if (! $path || ! is_file($path)) {
             return null;
         }
 
         try {
-            $mime = mime_content_type($path);
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
             $data = file_get_contents($path);
+            if ($data === false) {
+                return null;
+            }
             return 'data:' . $mime . ';base64,' . base64_encode($data);
         } catch (\Throwable $e) {
             return null;
@@ -35,17 +46,35 @@ class InvoiceController extends Controller
             return null;
         }
 
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            $storagePath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
+            if (is_file($storagePath)) {
+                return $storagePath;
+            }
+        }
+
         $absolute = storage_path('app/public/' . ltrim($path, '/'));
-        return is_file($absolute) ? $absolute : null;
+        if (is_file($absolute)) {
+            return $absolute;
+        }
+
+        $publicAbsolute = public_path('storage/' . ltrim($path, '/'));
+        if (is_file($publicAbsolute)) {
+            return $publicAbsolute;
+        }
+
+        return null;
     }
 
     private function getLogoForPdf(Invoice $invoice): ?string
     {
-        if (! extension_loaded('gd')) {
+        $path = $this->resolveLogoPath($invoice);
+        if (! $path || ! is_file($path)) {
             return null;
         }
 
-        return $this->getLogoBase64($invoice);
+        // Return base64 or absolute path. In DomPDF base64 data URI works seamlessly.
+        return $this->getLogoBase64($invoice) ?: $path;
     }
 
     public function pdf(Invoice $invoice): Response
@@ -60,7 +89,11 @@ class InvoiceController extends Controller
         $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        $pdf = Pdf::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'chroot' => [base_path(), storage_path(), public_path()],
+        ])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 
@@ -87,7 +120,11 @@ class InvoiceController extends Controller
         $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        $pdf = Pdf::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'chroot' => [base_path(), storage_path(), public_path()],
+        ])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 
@@ -154,7 +191,11 @@ class InvoiceController extends Controller
         $logoPath = $this->getLogoForPdf($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        $pdf = Pdf::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'chroot' => [base_path(), storage_path(), public_path()],
+        ])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4');
 

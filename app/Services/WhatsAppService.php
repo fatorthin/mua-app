@@ -435,7 +435,11 @@ class WhatsAppService
         $logoPath = $this->getLogoBase64($invoice);
         $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
 
-        $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        $fileBinary = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'chroot' => [base_path(), storage_path(), public_path()],
+        ])
             ->loadView('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'))
             ->setPaper('A4')
             ->output();
@@ -488,24 +492,49 @@ class WhatsAppService
 
     private function getLogoBase64(Invoice $invoice): ?string
     {
-        if (! extension_loaded('gd')) {
-            return null;
-        }
-
         $path = $invoice->booking->user->invoice_logo_path ?? null;
         if (! $path) {
             return null;
         }
 
-        $absolute = storage_path('app/public/' . ltrim($path, '/'));
-        if (! is_file($absolute)) {
+        $absolute = null;
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            $storagePath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
+            if (is_file($storagePath)) {
+                $absolute = $storagePath;
+            }
+        }
+
+        if (! $absolute) {
+            $storagePath = storage_path('app/public/' . ltrim($path, '/'));
+            if (is_file($storagePath)) {
+                $absolute = $storagePath;
+            }
+        }
+
+        if (! $absolute) {
+            $publicPath = public_path('storage/' . ltrim($path, '/'));
+            if (is_file($publicPath)) {
+                $absolute = $publicPath;
+            }
+        }
+
+        if (! $absolute || ! is_file($absolute)) {
             return null;
         }
 
         try {
-            $mime = mime_content_type($absolute);
+            $ext = strtolower(pathinfo($absolute, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
             $data = file_get_contents($absolute);
-            return 'data:' . $mime . ';base64,' . base64_encode($data);
+            return $data !== false ? 'data:' . $mime . ';base64,' . base64_encode($data) : null;
         } catch (\Throwable $e) {
             return null;
         }
