@@ -193,7 +193,7 @@ class RoutesTest extends TestCase
         $this->actingAs($this->user)
             ->get("/invoices/{$invoice->id}/preview")
             ->assertOk()
-            ->assertHeader('content-type', 'image/jpeg');
+            ->assertSee($invoice->invoice_number);
     }
 
     public function test_invoice_preview_returns_403_for_other_user(): void

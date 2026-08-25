@@ -87,6 +87,21 @@ class InvoiceController extends Controller
         ]);
     }
 
+    public function previewHtml(Invoice $invoice): Response
+    {
+        abort_unless(
+            $invoice->booking->user_id === auth()->id() || auth()->user()->isAdmin(),
+            403
+        );
+
+        $invoice->loadMissing(['booking.client', 'booking.user', 'booking.items.service']);
+
+        $logoPath = $this->getLogoBase64($invoice);
+        $invoiceFooterNotes = $invoice->booking->user->invoice_footer_notes ?? null;
+
+        return response()->view('invoices.pdf', compact('invoice', 'logoPath', 'invoiceFooterNotes'));
+    }
+
     public function previewJpg(Invoice $invoice): Response
     {
         abort_unless(

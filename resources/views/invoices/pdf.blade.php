@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
         @page {
             margin: 40px;
@@ -11,16 +13,19 @@
 
         body {
             margin: 0;
-            padding: 0;
+            padding: 15px;
             font-family: 'Helvetica', 'Arial', sans-serif;
             color: #111;
             font-size: 13px;
             line-height: 1.5;
+            background-color: #fff;
         }
 
         .container {
             background-color: #fff;
             width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .header {
