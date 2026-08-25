@@ -81,6 +81,28 @@
 
     @livewireScripts
     <script>
+        window.downloadPdfInvoice = async function(url, filename) {
+            try {
+                const res = await fetch(url, { headers: { 'Accept': 'application/pdf' } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const blob = await res.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename || 'Invoice.pdf';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
+                    a.remove();
+                }, 2000);
+            } catch (err) {
+                console.error('Blob download failed, fallback to direct url:', err);
+                window.location.href = url;
+            }
+        };
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then((reg) => {

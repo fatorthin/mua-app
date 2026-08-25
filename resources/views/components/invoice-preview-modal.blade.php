@@ -5,16 +5,27 @@
     downloadUrl: '',
     loading: true,
     hasError: false,
+    downloading: false,
     openModal(data) {
         this.invoiceNumber = data.number || 'Invoice';
         this.previewUrl = data.previewUrl || '';
         this.downloadUrl = data.downloadUrl || '';
         this.loading = true;
         this.hasError = false;
+        this.downloading = false;
         this.open = true;
 
         // Push state to browser history so pressing Android/mobile Back button closes the modal without exiting the app
         window.history.pushState({ modal: 'invoice-preview' }, '');
+    },
+    async downloadPdf() {
+        if (!this.downloadUrl || this.downloading) return;
+        this.downloading = true;
+        try {
+            await window.downloadPdfInvoice(this.downloadUrl, 'Invoice-' + this.invoiceNumber + '.pdf');
+        } finally {
+            this.downloading = false;
+        }
     },
     retryLoad() {
         this.hasError = false;
@@ -80,14 +91,23 @@ aria-modal="true">
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <a :href="downloadUrl"
-                       :download="invoiceNumber + '.pdf'"
-                       class="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        <span class="hidden sm:inline">Download</span> PDF
-                    </a>
+                    <button type="button"
+                            @click="downloadPdf()"
+                            :disabled="downloading"
+                            class="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors disabled:opacity-75">
+                        <template x-if="!downloading">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </template>
+                        <template x-if="downloading">
+                            <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                        </template>
+                        <span x-text="downloading ? 'Mengunduh...' : 'Download PDF'"></span>
+                    </button>
                     <button type="button"
                             x-on:click="closeModal()"
                             class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none transition-colors"
@@ -139,14 +159,23 @@ aria-modal="true">
                             </svg>
                             Coba Muat Ulang
                         </button>
-                        <a :href="downloadUrl"
-                           :download="invoiceNumber + '.pdf'"
-                           class="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Unduh File PDF
-                        </a>
+                        <button type="button"
+                                @click="downloadPdf()"
+                                :disabled="downloading"
+                                class="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-75">
+                            <template x-if="!downloading">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </template>
+                            <template x-if="downloading">
+                                <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                            </template>
+                            <span x-text="downloading ? 'Mengunduh PDF...' : 'Unduh File PDF'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
