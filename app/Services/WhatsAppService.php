@@ -324,7 +324,7 @@ class WhatsAppService
         $studioName = $owner->studio_name ?? 'MUA STUDIO';
 
         $lines = [
-            'Halo ' . $clientName . ', 👋',
+            'Halo Kak ' . $clientName . ', 👋',
             '',
             '🧾 *KUITANSI PEMBAYARAN LUNAS*',
             '',
@@ -381,7 +381,7 @@ class WhatsAppService
             : number_format((float) $booking->price, 0, ',', '.');
 
         $lines = [
-            'Halo ' . $clientName . ', 👋',
+            'Halo Kak ' . $clientName . ', 👋',
             '',
             '⏰ *Pengingat Booking MUA*',
             '',
@@ -537,7 +537,7 @@ class WhatsAppService
 
         try {
             $ext = strtolower(pathinfo($absolute, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'png' => 'image/png',
                 'jpg', 'jpeg' => 'image/jpeg',
                 'webp' => 'image/webp',
@@ -592,7 +592,7 @@ class WhatsAppService
         }
 
         $lines = [
-            'Halo ' . $clientName . ',',
+            'Halo Kak ' . $clientName . ',',
             '',
             'Booking Anda berhasil dibuat.',
             'No. Invoice: ' . $invoice->invoice_number,

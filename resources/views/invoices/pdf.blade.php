@@ -229,9 +229,9 @@
                     <td class="brand-section">
                         @if (!empty($logoPath))
                             <img src="{{ $logoPath }}" class="brand-logo" alt="Logo">
-                            <div class="brand-name">{{ $invoice->booking->user->studio_name ?? 'MUA STUDIO' }}</div>
+                            <div class="brand-name">{{ $invoice->booking->user->name ?? 'MUA STUDIO' }}</div>
                         @else
-                            <div class="brand-name no-logo">{{ $invoice->booking->user->studio_name ?? 'MUA STUDIO' }}</div>
+                            <div class="brand-name no-logo">{{ $invoice->booking->user->name ?? 'MUA STUDIO' }}</div>
                         @endif
                         <div class="brand-details">
                             @if (!empty($invoice->booking->user->instagram))
