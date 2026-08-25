@@ -170,7 +170,8 @@ class RoutesTest extends TestCase
 
         $this->actingAs($this->user)
             ->get("/invoices/{$invoice->id}/download")
-            ->assertRedirect();
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_invoice_download_returns_403_for_other_user(): void

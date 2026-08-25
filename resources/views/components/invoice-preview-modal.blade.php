@@ -7,8 +7,7 @@
     hasError: false,
     openModal(data) {
         this.invoiceNumber = data.number || 'Invoice';
-        const rawUrl = data.previewUrl || '';
-        this.previewUrl = rawUrl ? (rawUrl + (rawUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime()) : '';
+        this.previewUrl = data.previewUrl || '';
         this.downloadUrl = data.downloadUrl || '';
         this.loading = true;
         this.hasError = false;
@@ -20,8 +19,11 @@
     retryLoad() {
         this.hasError = false;
         this.loading = true;
-        const base = this.previewUrl.split('?')[0];
-        this.previewUrl = base + '?t=' + new Date().getTime();
+        const current = this.previewUrl;
+        this.previewUrl = '';
+        this.$nextTick(() => {
+            this.previewUrl = current;
+        });
     },
     closeModal(fromPopState = false) {
         if (!this.open) return;
