@@ -68,4 +68,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Subscription::class)->latestOfMany();
     }
+
+    public function pricelists()
+    {
+        return $this->hasMany(Pricelist::class);
+    }
 }

@@ -657,6 +657,64 @@ class WhatsAppService
         return $normalized . '@s.whatsapp.net';
     }
 
+    public function sendPricelist(User $user, string $recipientPhone, \App\Models\Pricelist $pricelist, ?string $customMessage = null): array
+    {
+        ['url' => $url, 'auth' => $auth, 'device_id' => $deviceId] = $this->gatewayConfigFor($user);
+
+        if ($url === '' || $auth === '') {
+            return ['ok' => false, 'message' => 'WhatsApp gateway belum dikonfigurasi.'];
+        }
+
+        if ($deviceId === '') {
+            return ['ok' => false, 'message' => 'Device ID belum tersedia.'];
+        }
+
+        $phone = $this->toWhatsappJid($recipientPhone);
+        if ($phone === null) {
+            return ['ok' => false, 'message' => 'Nomor WhatsApp tujuan tidak valid.'];
+        }
+
+        $pricelist->loadMissing(['user', 'sections.items']);
+        $renderer = app(\App\Services\PricelistRenderer::class);
+        $pdfBinary = $renderer->getPdfBinary($pricelist);
+
+        $studioName = $user->studio_name ?: $user->name;
+        $caption = $customMessage ?: ("Halo! ✨ Berikut adalah brosur *" . $pricelist->title . "* dari *" . $studioName . "*.\n\n" .
+            "Anda juga dapat melihat paket lengkap secara interaktif di link berikut:\n" .
+            $pricelist->public_url . "\n\n" .
+            "Silakan tanyakan jika ada yang ingin dikonsultasikan. Terima kasih! 🌸");
+
+        $fileName = 'Pricelist-' . str_replace(' ', '_', $pricelist->title) . '.pdf';
+
+        $response = $this->authorizedRequest($auth)
+            ->withHeaders($this->deviceHeaders($deviceId))
+            ->attach('file', $pdfBinary, $fileName)
+            ->acceptJson()
+            ->post($url . '/send/file', [
+                'phone' => $phone,
+                'caption' => $caption,
+            ]);
+
+        if ($response->failed()) {
+            Log::warning('Failed sending WhatsApp pricelist.', [
+                'user_id' => $user->id,
+                'phone' => $phone,
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            return [
+                'ok' => false,
+                'message' => $response->json('message') ?: 'Gagal mengirim pricelist ke WhatsApp.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'Pricelist berhasil dikirim ke WhatsApp ' . $recipientPhone . '.',
+        ];
+    }
+
     /**
      * @return array{0: string, 1: string}
      */

@@ -32,12 +32,6 @@ new #[Layout('layouts.guest')] class extends Component {
                 Anda dengan lebih cepat.</p>
         </div>
 
-        <div class="mb-6 rounded-2xl border border-pink-100 bg-pink-50/70 p-4 text-sm text-gray-600">
-            <p class="font-semibold text-gray-800">Akun demo</p>
-            <p class="mt-1">No. WhatsApp: <span class="font-medium text-pink-600">6281234567890</span></p>
-            <p>Password: <span class="font-medium text-pink-600">password</span></p>
-        </div>
-
         <x-auth-session-status
             class="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
             :status="session('status')" />
