@@ -33,6 +33,11 @@ class Service extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function pricelistItems()
+    {
+        return $this->hasMany(PricelistItem::class);
+    }
+
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');

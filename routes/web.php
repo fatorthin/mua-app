@@ -2,12 +2,19 @@
 
 use App\Http\Controllers\DeployWebhookController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PricelistController;
+use App\Http\Controllers\PublicPricelistController;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 Route::post('/webhooks/github/deploy', DeployWebhookController::class)
     ->name('webhooks.github.deploy');
+
+// Public Pricelists Microsite & Exports
+Route::get('/p/{slug}', [PublicPricelistController::class, 'show'])->name('pricelists.public');
+Route::get('/p/{slug}/pdf', [PublicPricelistController::class, 'pdf'])->name('pricelists.public-pdf');
+Route::get('/p/{slug}/jpg', [PublicPricelistController::class, 'jpg'])->name('pricelists.public-jpg');
 
 Route::get('/invoices/{invoice}/public-pdf', [InvoiceController::class, 'publicPdf'])
     ->middleware('signed')
@@ -48,6 +55,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/invoices/{invoice}/preview', [InvoiceController::class, 'previewHtml'])->name('invoices.preview');
     Route::get('/invoices/{invoice}/download/{filename?}', [InvoiceController::class, 'download'])->name('invoices.download');
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+
+    // Pricelists
+    Route::get('/pricelists', fn() => view('pricelists.index'))->name('pricelists.index');
+    Route::get('/pricelists/create', fn() => view('pricelists.create'))->name('pricelists.create');
+    Route::get('/pricelists/{pricelist}/edit', function (\App\Models\Pricelist $pricelist) {
+        abort_unless($pricelist->user_id === auth()->id(), 403);
+        return view('pricelists.edit', compact('pricelist'));
+    })->name('pricelists.edit');
+    Route::get('/pricelists/{pricelist}/pdf', [PricelistController::class, 'pdf'])->name('pricelists.pdf');
+    Route::get('/pricelists/{pricelist}/jpg', [PricelistController::class, 'jpg'])->name('pricelists.jpg');
 
     // Admin
     Route::get('/admin/users', fn() => view('admin.users'))->name('admin.users');
